@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from generics import M1, G, NUM_SIMULATIONS
+from generics import M1, NUM_SIMULATIONS, G
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import DataLoader, Dataset
 
@@ -138,8 +138,8 @@ def physics_loss(y_pred, y_true):
 
     # Velocity-position relationship
     vel_pos_loss = torch.mean(
-        (vx_pred - (x_pred[1:] - x_pred[:-1])) ** 2
-        + (vy_pred - (y_pred[1:] - y_pred[:-1])) ** 2
+        (vx_pred[:-1] - (x_pred[1:] - x_pred[:-1])) ** 2
+        + (vy_pred[:-1] - (y_pred[1:] - y_pred[:-1])) ** 2
     )
 
     # Combine losses
@@ -231,11 +231,18 @@ def train_model(
         )
 
         early_stopping(val_loss)
+        if (epoch + 1) % 10 == 0:
+            # Save model state every 10 epochs
+            torch.save(
+                model.state_dict(),
+                f"model_{model_type}_{dataset_type}_{spaceship_id}.pth",
+            )
         if early_stopping.early_stop:
             print(f"Early stopping triggered at epoch {epoch+1}")
             break
 
     return model
+
 
 def predict_future(model, initial_sequence, scaler, steps, device, output_size):
     model.eval()
@@ -253,7 +260,12 @@ def predict_future(model, initial_sequence, scaler, steps, device, output_size):
     # Check for NaN or Inf values
     if np.any(np.isnan(predictions)) or np.any(np.isinf(predictions)):
         print("Warning: NaN or Inf values found in predictions. Clipping values.")
-        predictions = np.nan_to_num(predictions, nan=0.0, posinf=np.finfo(np.float32).max, neginf=np.finfo(np.float32).min)
+        predictions = np.nan_to_num(
+            predictions,
+            nan=0.0,
+            posinf=np.finfo(np.float32).max,
+            neginf=np.finfo(np.float32).min,
+        )
 
     return scaler.inverse_transform(predictions)
 
@@ -405,6 +417,32 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     for model_type in models:
+        # Load data
+        train_dataset, train_scaler, train_df = load_data(
+            "train", datasets[0], 0, seq_length
+        )
+        val_dataset, _, val_df = load_data("val", datasets[0], 0, seq_length)
+        test_dataset, _, test_df = load_data("test", datasets[0], 0, seq_length)
+
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_size)
+        test_loader = DataLoader(test_dataset, batch_size=batch_size)
+
+        # Calculate input and output sizes
+        input_size = train_dataset[0][0].shape[0] * train_dataset[0][0].shape[1]
+        output_size = train_dataset[0][1].shape[0]
+
+        if model_type == "SimpleRegression":
+            model = SimpleRegression(input_size, 64, output_size).to(device)
+        elif model_type == "LSTM":
+            model = OrbitLSTM(train_dataset[0][0].shape[1], 64, 2, output_size).to(
+                device
+            )
+        else:  # PINN
+            model = PINN(input_size, 64, output_size).to(device)
+
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        criterion = nn.MSELoss()
         for dataset_type in datasets:
             for spaceship_id in range(NUM_SIMULATIONS):
                 wandb.init(
@@ -449,19 +487,6 @@ def main():
 
                     print(f"Input size: {input_size}, Output size: {output_size}")
 
-                    # Initialize model
-                    if model_type == "SimpleRegression":
-                        model = SimpleRegression(input_size, 64, output_size).to(device)
-                    elif model_type == "LSTM":
-                        model = OrbitLSTM(
-                            train_dataset[0][0].shape[1], 64, 2, output_size
-                        ).to(device)
-                    else:  # PINN
-                        model = PINN(input_size, 64, output_size).to(device)
-
-                    criterion = nn.MSELoss()
-                    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
                     # Train model
                     model = train_model(
                         model,
@@ -474,6 +499,12 @@ def main():
                         model_type,
                         dataset_type,
                         spaceship_id,
+                    )
+
+                    # Save model state after training each spaceship
+                    torch.save(
+                        model.state_dict(),
+                        f"model_{model_type}_{dataset_type}_{spaceship_id}.pth",
                     )
 
                     # Make predictions for different time steps
