@@ -3,16 +3,10 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-import wandb
-from generics import (
-    BASE_RELATIVE_UNCERTAINTY,
-    DT,
-    FIGURE_LOCATION,
-    HEAVY_BODY1_POSITION,
-    HEAVY_BODY2_POSITION,
-    G,
-)
+from generics import DT, FIGURE_LOCATION, HEAVY_BODY1_POSITION, HEAVY_BODY2_POSITION, G
 from sklearn.preprocessing import StandardScaler
+
+import wandb
 
 
 # Calculate initial velocity for a stable circular orbit
@@ -52,7 +46,7 @@ def additional_force(v, a_amplitude=5e-9):
 
 
 # Apply uncertainty to angle
-def apply_uncertainty_to_angle(r, relative_uncertainty=BASE_RELATIVE_UNCERTAINTY):
+def apply_uncertainty_to_angle(r):
     angle = np.arctan2(r[1], r[0])
 
     radius = np.linalg.norm(r)
@@ -65,7 +59,7 @@ def apply_uncertainty_to_angle(r, relative_uncertainty=BASE_RELATIVE_UNCERTAINTY
 
 
 # Apply uncertainty to radius
-def apply_uncertainty_to_radius(r, relative_uncertainty=BASE_RELATIVE_UNCERTAINTY):
+def apply_uncertainty_to_radius(r, relative_uncertainty):
     radius = np.linalg.norm(r)
     radius += np.clip(
         np.random.normal(0, relative_uncertainty) * radius,
@@ -76,7 +70,7 @@ def apply_uncertainty_to_radius(r, relative_uncertainty=BASE_RELATIVE_UNCERTAINT
 
 
 # Apply uncertainty to velocity
-def apply_uncertainty_to_velocity(v, relative_uncertainty=BASE_RELATIVE_UNCERTAINTY):
+def apply_uncertainty_to_velocity(v, relative_uncertainty):
     return v * (
         1
         + np.clip(
@@ -93,8 +87,8 @@ def euler_update(
     v,
     F,
     m,
+    relative_uncertainty,
     dt=DT,
-    relative_uncertainty=BASE_RELATIVE_UNCERTAINTY,
     increased_acceleration=0.00,
 ):
     a = get_acceleration(F, m, increased_acceleration)
@@ -278,7 +272,7 @@ def plot_trajectory(
     dataset_type,
     model_name,
     dataset_name,
-    time_steps,
+    time_steps
 ):
     plt.figure(figsize=(12, 10))
 
@@ -424,7 +418,6 @@ def plot_combined_trajectory(
 
     plt.close()
 
-
 def plot_velocity(
     actual_velocities,
     predicted_velocities,
@@ -433,38 +426,42 @@ def plot_velocity(
     dataset_type,
     model_name,
     dataset_name,
-    time_steps,
+    time_steps
 ):
-    time = np.arange(len(actual_velocities)) * dt
+    print(f"Debug: actual_velocities shape: {actual_velocities.shape}")
+    print(f"Debug: predicted_velocities shape: {predicted_velocities.shape}")
+
+    # Use the minimum length between actual and predicted data
+    min_length = min(len(actual_velocities), len(predicted_velocities))
+    actual_velocities = actual_velocities[:min_length]
+    predicted_velocities = predicted_velocities[:min_length]
+
+    time = np.arange(min_length) * dt
     plt.figure(figsize=(12, 8))
 
     # Plot actual velocity
+    actual_velocity_magnitude = np.linalg.norm(actual_velocities, axis=1)
     plt.plot(
         time,
-        np.linalg.norm(actual_velocities, axis=1),
+        actual_velocity_magnitude,
         label="Actual",
         color="blue",
         linewidth=0.5,
     )
 
     # Plot predicted velocity
-    predicted_time = time[-len(predicted_velocities) :]
     predicted_velocity_magnitude = np.linalg.norm(predicted_velocities, axis=1)
+
+    print(f"Debug: time shape: {time.shape}")
+    print(f"Debug: predicted_velocity_magnitude shape: {predicted_velocity_magnitude.shape}")
+
     plt.scatter(
-        predicted_time[:-1],
-        predicted_velocity_magnitude[:-1],
+        time,
+        predicted_velocity_magnitude,
         color="green",
         s=20,
         zorder=3,
         label="Predicted steps",
-    )
-    plt.scatter(
-        predicted_time[-1],
-        predicted_velocity_magnitude[-1],
-        color="orange",
-        s=50,
-        zorder=4,
-        label="Last predicted step",
     )
 
     plt.title(f"{title} - {dataset_type.capitalize()}")
@@ -477,11 +474,9 @@ def plot_velocity(
     os.makedirs(folder, exist_ok=True)
 
     # Save zoomed plot
-    t_min, t_max = predicted_time.min(), predicted_time.max()
-    v_min, v_max = (
-        predicted_velocity_magnitude.min(),
-        predicted_velocity_magnitude.max(),
-    )
+    t_min, t_max = time.min(), time.max()
+    v_min = min(actual_velocity_magnitude.min(), predicted_velocity_magnitude.min())
+    v_max = max(actual_velocity_magnitude.max(), predicted_velocity_magnitude.max())
     t_margin = (t_max - t_min) * 0.1
     v_margin = (v_max - v_min) * 0.1
     plt.xlim(t_min - t_margin, t_max + t_margin)
@@ -495,14 +490,8 @@ def plot_velocity(
     # Save full plot
     plt.xlim(time.min(), time.max())
     plt.ylim(
-        min(
-            np.linalg.norm(actual_velocities, axis=1).min(),
-            predicted_velocity_magnitude.min(),
-        ),
-        max(
-            np.linalg.norm(actual_velocities, axis=1).max(),
-            predicted_velocity_magnitude.max(),
-        ),
+        min(actual_velocity_magnitude.min(), predicted_velocity_magnitude.min()),
+        max(actual_velocity_magnitude.max(), predicted_velocity_magnitude.max()),
     )
     plt.savefig(
         os.path.join(folder, f"velocity_{dataset_type}_full.png"),

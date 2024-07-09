@@ -1,71 +1,67 @@
 # generics.py
 
-# Constants
 import numpy as np
 import torch
 
-FIGURE_LOCATION = "code/images/"
-CACHE_FOLDER = "code/cache/"
-CHECKPOINT_LOCATION = "code/checkpoints/"
+# Folders
+FIGURE_LOCATION = "images/"
+CACHE_FOLDER = "cache/"
+CHECKPOINT_LOCATION = "checkpoints/"
+MINI_CHECKPOINT_LOCATION = "mini_checkpoints/"
+
+# Physical constants
 G = 6.67430e-11  # Gravitational constant (m^3 kg^-1 s^-2)
 M1 = 1e9  # Mass of the first heavy object (kg)
 M2 = 1e9  # Mass of the second heavy object (kg) - for 3-body problem
 m = 1e4  # Mass of the orbiting object (kg)
 R = 10000  # Initial radius (m)
 DT = 10000  # Time step (s)
-# Constants
+
+# Initial conditions
 INITIAL_POSITION_TWO_BODY = np.array([R, 0.0])
 INITIAL_POSITION_THREE_BODY = np.array([0.0, 30500.0 * 0.98])
 HEAVY_BODY1_POSITION = np.array([10000.0, 0.0])
 HEAVY_BODY2_POSITION = np.array([-10000.0, 0.0])
-BASE_RELATIVE_UNCERTAINTY = 0.00
+
+# Simulation parameters
 RELATIVE_UNCERTAINTY = 0.01
-SMALL_RELATIVE_UNCERTAINTY_ADJUSTMENT_STEP = 100
-BASE_SMALL_ACCELARATION_CHANGE = 0.00
 SMALL_ACCELARATION_CHANGE = 0.01
-SLIGHT_Y_ADJUSTMENT_STEP = 1000
-SLIGHT_Y_ADJUSTMENT = 0
-SMALL_ACCELARATION_ADJUSTMENT_STEP = 1000
-STARTING_POSITION = torch.tensor([R, 0.0])  # Starting position of the orbiting body
-# Important: The total simulated time (over
-# all time steps) should be selected so that the object rotates at least ten times around the heavy body.
-# Create a plot of the moving body as a function of the two-dimensional coordinates and a plot for the
-# absolute value of the velocity as a function of time.
 TOTAL_STEPS = 100000  # Total number of time steps
 
-DEVICE = "mps"
-INPUT_SIZE = 12
+# Device configuration
+DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
+
+# Dataset parameters
+N_STEPS = 3
+NUM_SIMULATIONS = 10
+
+# Model parameters
+INPUT_SIZE = 12  # 3 time steps, each with x, y, vx, vy
+N_STEPS = 3
 OUTPUT_SIZE = 4
-MIN_LR = 1e-6
-HIDDEN_SIZE = 512
+HIDDEN_SIZE = 256
 NUM_LAYERS = 6
 DROPOUT_RATE = 0.1
-SUBSET_SIZE = None
-BATCH_SIZE = 16 if SUBSET_SIZE != None and SUBSET_SIZE <= 3000 else 32
-EPOCHS = 15 if SUBSET_SIZE != None and SUBSET_SIZE <= 3000 else 100
+BATCH_SIZE = 32
+EPOCHS = 100
 LEARNING_RATE = 0.001
-EARLY_STOPPING = True
-PATIENCE = 10  # or any other value you prefer
+EARLY_STOPPING_PATIENCE = 10
 NUM_LSTM_LAYERS = 3
 BIDIRECTIONAL = True
-ATTENTION_HEADS = 4
-FC_LAYERS = 3
-ACTIVATION = "relu"
-USE_LAYER_NORM = True
-USE_BATCH_NORM = True
-# New configuration constants
-NUM_HIDDEN_LAYERS = 3
-ACTIVATION = "relu"
-HIDDEN_SIZE_REDUCTION_FACTOR = 2
-RESIDUAL_CONNECTIONS = False
-PHYSICS_LOSS_WEIGHTS = {
-    "mse": 1.0,
-    "energy": 0.1,
-    "momentum": 0.1,
-    "position": 0.1,
-    "velocity": 0.1,
-}
-TIME_STEP = 1.0
-N_STEPS = 3
 
-NUM_SIMULATIONS = 15
+
+
+# Mini network parameters
+MINI_HIDDEN_SIZE = 64
+MINI_NUM_LAYERS = 2
+MINI_EPOCHS = 3
+
+# Cross-validation parameters
+NUM_FOLDS = 5
+# Remove unused constants
+# (BASE_RELATIVE_UNCERTAINTY, SMALL_RELATIVE_UNCERTAINTY_ADJUSTMENT_STEP,
+# BASE_SMALL_ACCELARATION_CHANGE, SLIGHT_Y_ADJUSTMENT_STEP, SLIGHT_Y_ADJUSTMENT,
+# SMALL_ACCELARATION_ADJUSTMENT_STEP, MIN_LR, SUBSET_SIZE,
+# ATTENTION_HEADS, FC_LAYERS, USE_LAYER_NORM, USE_BATCH_NORM,
+# NUM_HIDDEN_LAYERS, HIDDEN_SIZE_REDUCTION_FACTOR, RESIDUAL_CONNECTIONS,
+# PHYSICS_LOSS_WEIGHTS, TIME_STEP)
