@@ -13,6 +13,7 @@ from generics import (
     DEVICE,
     DT,
     EPOCHS,
+    HIDDEN_SIZE,
     INPUT_SIZE,
     LEARNING_RATE,
     M1,
@@ -22,12 +23,19 @@ from generics import (
     MINI_NUM_LAYERS,
     N_STEPS,
     NUM_FOLDS,
+    NUM_LAYERS,
     OUTPUT_SIZE,
 )
 from pinn_loss import pinn_loss
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import DataLoader, Dataset
-from utils import plot_trajectory, plot_velocity
+from tqdm import tqdm
+from utils import (
+    plot_full_trajectory_with_predictions,
+    plot_full_velocity_with_predictions,
+    plot_trajectory,
+    plot_velocity,
+)
 
 import wandb
 
@@ -58,12 +66,14 @@ class OrbitLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(OrbitLSTM, self).__init__()
         self.lstm = nn.LSTM(
-            input_size, hidden_size, num_layers, batch_first=True, dropout=0.2
+            input_size // 3, hidden_size, num_layers, batch_first=True, dropout=0.2
         )
         self.fc1 = nn.Linear(hidden_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
+        # Reshape input: (batch_size, input_size) -> (batch_size, sequence_length, features)
+        x = x.view(x.size(0), 3, -1)  # 3 timesteps, 4 features each
         lstm_out, _ = self.lstm(x)
         x = torch.relu(self.fc1(lstm_out[:, -1, :]))
         return self.fc2(x)
@@ -109,7 +119,12 @@ class PINN(nn.Module):
 
 class OrbitDataset(Dataset):
     def __init__(self, sequences):
-        self.sequences = torch.FloatTensor(sequences).to(DEVICE)
+        if isinstance(sequences, np.ndarray):
+            self.sequences = torch.FloatTensor(sequences).to(DEVICE)
+        elif isinstance(sequences, torch.Tensor):
+            self.sequences = sequences.to(DEVICE)
+        else:
+            raise TypeError("Sequences must be either a numpy array or a torch Tensor")
 
     def __len__(self):
         return len(self.sequences)
@@ -142,15 +157,16 @@ def load_data(dataset_type, problem_type, fold, seq_length):
     df[columns_to_scale] = scaler.fit_transform(df[columns_to_scale])
 
     sequences = []
+    trajectory_lengths = []
     for spaceship in df["spaceship_id"].unique():
-        spaceship_data = df[df["spaceship_id"] == spaceship][columns_to_scale].values
-        print(f"Debug: spaceship_data shape = {spaceship_data.shape}")
+        spaceship_data = df[df["spaceship_id"] == spaceship][columns_to_scale]
+        trajectory_lengths.append(len(spaceship_data))
         for i in range(len(spaceship_data) - seq_length):
-            sequences.append(spaceship_data[i : i + seq_length + 1])
+            sequences.append(spaceship_data.iloc[i : i + seq_length + 1].values)
 
     sequences = np.array(sequences)
     print(f"Debug: sequences shape = {sequences.shape}")
-    return OrbitDataset(sequences), scaler, df
+    return OrbitDataset(sequences), scaler, df, trajectory_lengths
 
 
 def train_mini_model(model_type, train_loader, val_loader, dataset_type, fold):
@@ -159,13 +175,15 @@ def train_mini_model(model_type, train_loader, val_loader, dataset_type, fold):
     elif model_type == "SimpleRegression":
         model = SimpleRegression(INPUT_SIZE, MINI_HIDDEN_SIZE, OUTPUT_SIZE).to(DEVICE)
     elif model_type == "LSTM":
-        model = OrbitLSTM(4, MINI_HIDDEN_SIZE, MINI_NUM_LAYERS, OUTPUT_SIZE).to(DEVICE)
+        model = OrbitLSTM(
+            INPUT_SIZE, MINI_HIDDEN_SIZE, MINI_NUM_LAYERS, OUTPUT_SIZE
+        ).to(DEVICE)
     else:
         raise ValueError(f"Unknown model type: {model_type}")
 
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-    for epoch in range(MINI_EPOCHS):
+    for epoch in tqdm(range(MINI_EPOCHS), desc="Training mini model"):
         model.train()
         train_loss = 0
         for batch_x, batch_y in train_loader:
@@ -217,7 +235,7 @@ def train_model(
         optimizer, "min", patience=2, factor=0.5
     )
 
-    for epoch in range(EPOCHS):
+    for epoch in tqdm(range(EPOCHS), desc="Training model"):
         model.train()
         train_loss = train_mse_loss = train_energy_loss = train_momentum_loss = (
             train_laplace_loss
@@ -362,22 +380,19 @@ def predict_future(model, initial_sequence, scaler, steps, output_size):
     current_input = initial_sequence.clone().to(DEVICE)
     predictions = []
 
-    # print(f"Initial sequence shape: {initial_sequence.shape}")
-
     with torch.no_grad():
-        for i in range(steps):
+        for _ in range(steps):
             model_input = current_input.view(1, -1)
-            # print(f"Step {i+1}, Model input shape: {model_input.shape}")
+            output = model(model_input).squeeze(0)  # Remove batch dimension
+            predictions.append(output.cpu().numpy())
 
-            output = model(model_input)
-            # print(f"Step {i+1}, Output shape: {output.shape}")
+            # Reshape output to match the shape of each step in current_input
+            output_reshaped = output.view(1, -1)
 
-            predictions.append(output.detach().cpu().numpy())
-            current_input = torch.cat((current_input[4:], output[0]), 0).to(DEVICE)
-            # print(f"Step {i+1}, Updated current input shape: {current_input.shape}")
+            # Update current_input by removing the first step and adding the new prediction
+            current_input = torch.cat((current_input[1:], output_reshaped), 0)
 
-    predictions = np.array(predictions).reshape(-1, output_size)
-    # print(f"Final predictions shape: {predictions.shape}")
+    predictions = np.array(predictions)
     return scaler.inverse_transform(predictions)
 
 
@@ -460,6 +475,112 @@ def get_dataset_sequences(dataset, steps):
         return dataset.sequences[:steps, -1, :].cpu().numpy()
 
 
+def perform_inference(model_type, dataset_type, is_mini):
+    print(f"Performing inference for {model_type} on {dataset_type}")
+
+    # Load test dataset
+    test_dataset, test_scaler, test_df = load_data("test", dataset_type, None, N_STEPS)
+
+    # Select a single test spaceship
+    spaceship_ids = test_df["spaceship_id"].unique()
+    selected_spaceship_id = spaceship_ids[
+        0
+    ]  # You can change this to select a different spaceship
+
+    # Get the full trajectory for the selected spaceship
+    spaceship_data = test_df[test_df["spaceship_id"] == selected_spaceship_id][
+        ["x", "y", "Vx", "Vy"]
+    ]
+    spaceship_data_scaled = pd.DataFrame(
+        test_scaler.transform(spaceship_data), columns=spaceship_data.columns
+    )
+
+    # Initialize model
+    if model_type == "PINN":
+        model = PINN(
+            INPUT_SIZE, MINI_HIDDEN_SIZE if is_mini else HIDDEN_SIZE, OUTPUT_SIZE
+        ).to(DEVICE)
+    elif model_type == "SimpleRegression":
+        model = SimpleRegression(
+            INPUT_SIZE, MINI_HIDDEN_SIZE if is_mini else HIDDEN_SIZE, OUTPUT_SIZE
+        ).to(DEVICE)
+    elif model_type == "LSTM":
+        model = OrbitLSTM(
+            INPUT_SIZE,
+            MINI_HIDDEN_SIZE if is_mini else HIDDEN_SIZE,
+            MINI_NUM_LAYERS if is_mini else NUM_LAYERS,
+            OUTPUT_SIZE,
+        ).to(DEVICE)
+    else:
+        raise ValueError(f"Unknown model type: {model_type}")
+
+    # Load the best model from each fold and ensemble their predictions
+    ensemble_predictions = []
+    for fold in tqdm(range(NUM_FOLDS), desc="Processing folds"):
+        if is_mini:
+            checkpoint_path = f"{MINI_CHECKPOINT_LOCATION}/{model_type}/{dataset_type}/fold{fold}_mini_model.pth"
+        else:
+            checkpoint_path = (
+                f"checkpoints/{model_type}/{dataset_type}/fold{fold}_best_model.pth"
+            )
+
+        model.load_state_dict(torch.load(checkpoint_path, map_location=DEVICE))
+        model.eval()
+
+        fold_predictions = []
+        with torch.no_grad():
+            for i in tqdm(
+                range(len(spaceship_data_scaled) - N_STEPS),
+                desc=f"Predicting fold {fold+1}",
+                leave=False,
+            ):
+                input_sequence = (
+                    torch.FloatTensor(
+                        spaceship_data_scaled.iloc[i : i + N_STEPS].values
+                    )
+                    .unsqueeze(0)
+                    .to(DEVICE)
+                )
+                output = model(input_sequence)
+                fold_predictions.append(output.cpu().numpy())
+        fold_predictions = np.concatenate(fold_predictions)
+        ensemble_predictions.append(fold_predictions)
+
+    # Average the predictions from all folds
+    ensemble_predictions = np.mean(ensemble_predictions, axis=0)
+    ensemble_predictions = pd.DataFrame(
+        test_scaler.inverse_transform(ensemble_predictions),
+        columns=spaceship_data.columns,
+    )
+
+    # Calculate metrics
+    actual_trajectory = spaceship_data.iloc[N_STEPS:]
+    test_mse = np.mean((ensemble_predictions.values - actual_trajectory.values) ** 2)
+    test_mae = np.mean(np.abs(ensemble_predictions.values - actual_trajectory.values))
+    print(f"Test MSE: {test_mse:.4f}, Test MAE: {test_mae:.4f}")
+
+    # Plot full trajectory with predictions
+    plot_full_trajectory_with_predictions(
+        spaceship_data.values,
+        ensemble_predictions.values,
+        f"{model_type} Full Trajectory with Predictions",
+        model_type,
+        dataset_type,
+        is_mini=is_mini,
+    )
+
+    # Plot full velocity trajectory with predictions
+    plot_full_velocity_with_predictions(
+        spaceship_data.values,
+        ensemble_predictions.values,
+        DT,
+        f"{model_type} Full Velocity with Predictions",
+        model_type,
+        dataset_type,
+        is_mini=is_mini,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Train orbital prediction models")
     parser.add_argument(
@@ -477,6 +598,19 @@ def main():
     parser.add_argument(
         "--use_wandb", action="store_true", help="Use Weights & Biases for logging"
     )
+    parser.add_argument(
+        "--inference",
+        action="store_true",
+        help="Perform inference on the test set using saved checkpoints",
+    )
+
+    parser.add_argument(
+        "--prediction_steps",
+        nargs="+",
+        type=int,
+        default=[10, 100, 500],
+        help="Number of steps to predict into the future",
+    )
     args = parser.parse_args()
 
     print(f"INPUT_SIZE: {INPUT_SIZE}")
@@ -487,7 +621,7 @@ def main():
             print(f"# Model: {model_type:<20} Dataset: {dataset_type:<35} #")
             print(f"{'#'*70}")
 
-            if args.use_wandb:
+            if args.use_wandb and not args.inference:
                 wandb.init(
                     project="orbital-prediction",
                     entity="radboud-mlip-10",
@@ -504,175 +638,170 @@ def main():
                 )
 
             try:
-                fold_results = []
-                for fold in range(NUM_FOLDS):
-                    train_dataset, train_scaler, _ = load_data(
-                        "train", dataset_type, fold, N_STEPS
-                    )
-                    val_dataset, _, _ = load_data("val", dataset_type, fold, N_STEPS)
-
-                    if args.mini:
-                        # Reduce dataset size for mini training
-                        mini_size = min(
-                            1000, len(train_dataset)
-                        )  # Use at most 1000 samples or the full dataset if smaller
-                        indices = torch.randperm(len(train_dataset))[:mini_size]
-                        train_dataset = torch.utils.data.Subset(train_dataset, indices)
-
-                        mini_val_size = min(100, len(val_dataset))
-                        indices = torch.randperm(len(val_dataset))[:mini_val_size]
-                        val_dataset = torch.utils.data.Subset(val_dataset, indices)
-
-                    train_loader = DataLoader(
-                        train_dataset, batch_size=BATCH_SIZE, shuffle=True
-                    )
-                    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
-
-                    print(f"\nFold {fold+1}/{NUM_FOLDS}")
-                    print(f"Train dataset size: {len(train_dataset)}")
-                    print(f"Validation dataset size: {len(val_dataset)}")
-
-                    if args.mini:
-                        model = train_mini_model(
-                            model_type, train_loader, val_loader, dataset_type, fold
+                if args.inference:
+                    perform_inference(model_type, dataset_type, args.mini)
+                else:
+                    # Existing training code
+                    fold_results = []
+                    for fold in tqdm(range(NUM_FOLDS), desc="Processing folds"):
+                        train_dataset, train_scaler, _, trajectory_lengths = load_data(
+                            "train", dataset_type, fold, N_STEPS
                         )
-                    else:
-                        model = train_model(
-                            model,
-                            train_loader,
-                            val_loader,
-                            model_type,
-                            dataset_type,
-                            fold,
-                            args.use_wandb,
+                        val_dataset, _, _, _ = load_data(
+                            "val", dataset_type, fold, N_STEPS
                         )
 
-                    val_mse, val_mae = evaluate_model(model, val_loader, train_scaler)
-                    fold_results.append((val_mse, val_mae))
+                        # Initialize the model here, outside of the mini-specific code
+                        if model_type == "PINN":
+                            model = PINN(
+                                INPUT_SIZE,
+                                MINI_HIDDEN_SIZE if args.mini else HIDDEN_SIZE,
+                                OUTPUT_SIZE,
+                            ).to(DEVICE)
+                        elif model_type == "SimpleRegression":
+                            model = SimpleRegression(
+                                INPUT_SIZE,
+                                MINI_HIDDEN_SIZE if args.mini else HIDDEN_SIZE,
+                                OUTPUT_SIZE,
+                            ).to(DEVICE)
+                        elif model_type == "LSTM":
+                            model = OrbitLSTM(
+                                INPUT_SIZE,
+                                MINI_HIDDEN_SIZE if args.mini else HIDDEN_SIZE,
+                                MINI_NUM_LAYERS if args.mini else NUM_LAYERS,
+                                OUTPUT_SIZE,
+                            ).to(DEVICE)
+                        else:
+                            raise ValueError(f"Unknown model type: {model_type}")
 
-                    initial_sequence = next(iter(val_loader))[0][0].to(DEVICE)
-                    print(f"Debug: Initial sequence shape: {initial_sequence.shape}")
-                    for steps in [10, 100, 500]:
-                        predictions = predict_future(
-                            model, initial_sequence, train_scaler, steps, OUTPUT_SIZE
+                        if args.mini:
+                            # Select a continuous segment of the dataset for mini training
+                            total_sequences = sum(trajectory_lengths)
+                            mini_size = min(1000, total_sequences)
+
+                            # Randomly select a starting point
+                            start_idx = np.random.randint(
+                                0, total_sequences - mini_size
+                            )
+
+                            # Find the trajectory that contains the starting point
+                            cumulative_length = 0
+                            for i, length in enumerate(trajectory_lengths):
+                                if cumulative_length + length > start_idx:
+                                    start_trajectory = i
+                                    start_within_trajectory = (
+                                        start_idx - cumulative_length
+                                    )
+                                    break
+                                cumulative_length += length
+
+                            mini_sequences = []
+                            current_trajectory = start_trajectory
+                            current_idx = start_within_trajectory
+                            while len(mini_sequences) < mini_size:
+                                if (
+                                    current_idx
+                                    >= trajectory_lengths[current_trajectory] - N_STEPS
+                                ):
+                                    current_trajectory += 1
+                                    current_idx = 0
+                                mini_sequences.append(
+                                    train_dataset.sequences[current_idx].cpu().numpy()
+                                )
+                                current_idx += 1
+
+                            # Split into train and validation
+                            train_size = int(0.9 * len(mini_sequences))
+                            train_dataset = OrbitDataset(
+                                np.array(mini_sequences[:train_size])
+                            )
+                            val_dataset = OrbitDataset(
+                                np.array(mini_sequences[train_size:])
+                            )
+
+                        train_loader = DataLoader(
+                            train_dataset, batch_size=BATCH_SIZE, shuffle=False
                         )
-                        actual = train_scaler.inverse_transform(
-                            get_dataset_sequences(val_dataset, steps)
+                        val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
+
+                        print(f"\nFold {fold+1}/{NUM_FOLDS}")
+                        print(f"Train dataset size: {len(train_dataset)}")
+                        print(f"Validation dataset size: {len(val_dataset)}")
+
+                        if args.mini:
+                            model = train_mini_model(
+                                model_type, train_loader, val_loader, dataset_type, fold
+                            )
+                        else:
+                            model = train_model(
+                                model,
+                                train_loader,
+                                val_loader,
+                                model_type,
+                                dataset_type,
+                                fold,
+                                args.use_wandb,
+                            )
+
+                        val_mse, val_mae = evaluate_model(
+                            model, val_loader, train_scaler
                         )
-                        print(f"Debug: Predictions shape: {predictions.shape}")
-                        print(f"Debug: Actual shape: {actual.shape}")
-                        dataset_name = dataset_type
-                        # Use only as many prediction steps as we have actual data
-                        min_steps = min(steps, len(actual))
-                        plot_trajectory(
-                            actual[:min_steps],
-                            predictions[:min_steps],
-                            f"{model_type} Trajectory",
-                            dataset_type,
-                            model_type,
-                            dataset_name,
-                            min_steps,
+                        fold_results.append((val_mse, val_mae))
+
+                        initial_sequence = (
+                            next(iter(val_loader))[0][0].view(N_STEPS, -1).to(DEVICE)
                         )
-                        plot_velocity(
-                            actual[:min_steps],
-                            predictions[:min_steps],
-                            DT,
-                            f"{model_type} Velocity",
-                            dataset_type,
-                            model_type,
-                            dataset_name,
-                            min_steps,
+
+                        print(
+                            f"Debug: Initial sequence shape: {initial_sequence.shape}"
                         )
-                avg_val_mse = np.mean([res[0] for res in fold_results])
-                avg_val_mae = np.mean([res[1] for res in fold_results])
-                if args.use_wandb:
-                    wandb.log(
-                        {
-                            f"{model_type}_{dataset_type}_avg_val_mse": avg_val_mse,
-                            f"{model_type}_{dataset_type}_avg_val_mae": avg_val_mae,
-                        }
-                    )
+                        for steps in args.prediction_steps:
+                            steps = min(
+                                steps, len(val_dataset)
+                            )  # Ensure we don't exceed dataset length
+                            predictions = predict_future(
+                                model,
+                                initial_sequence,
+                                train_scaler,
+                                steps,
+                                OUTPUT_SIZE,
+                            )
+                            actual = train_scaler.inverse_transform(
+                                get_dataset_sequences(val_dataset, steps)
+                            )
+                            print(f"Debug: Predictions shape: {predictions.shape}")
+                            print(f"Debug: Actual shape: {actual.shape}")
 
-                # Load and evaluate on test set
-                print(f"Debug: Loading test dataset with N_STEPS = {N_STEPS}")
-                test_dataset, test_scaler, _ = load_data(
-                    "test", dataset_type, None, N_STEPS
-                )
-                test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
-
-                # Load the best model from each fold and ensemble their predictions
-                ensemble_predictions = []
-                for fold in range(NUM_FOLDS):
-                    if args.mini:
-                        checkpoint_path = f"{MINI_CHECKPOINT_LOCATION}/{model_type}/{dataset_type}/fold{fold}_mini_model.pth"
-                    else:
-                        checkpoint_path = f"checkpoints/{model_type}/{dataset_type}/fold{fold}_best_model.pth"
-                    model.load_state_dict(
-                        torch.load(checkpoint_path, map_location=DEVICE)
-                    )
-                    model.to(DEVICE)
-                    fold_predictions = []
-                    with torch.no_grad():
-                        for batch_x, _ in test_loader:
-                            batch_x = batch_x.to(DEVICE)
-                            outputs = model(batch_x)
-                            fold_predictions.append(outputs.cpu().numpy())
-                    fold_predictions = np.concatenate(fold_predictions)
-                    ensemble_predictions.append(fold_predictions)
-
-                # Average the predictions from all folds
-                ensemble_predictions = np.mean(ensemble_predictions, axis=0)
-                print(
-                    f"Debug: ensemble_predictions shape before inverse_transform: {ensemble_predictions.shape}"
-                )
-                ensemble_predictions = test_scaler.inverse_transform(
-                    ensemble_predictions
-                )
-                print(
-                    f"Debug: ensemble_predictions shape after inverse_transform: {ensemble_predictions.shape}"
-                )
-
-                # Evaluate ensemble predictions
-                test_actual = np.concatenate(
-                    [seq[-1] for seq in test_dataset.sequences.cpu().numpy()]
-                )
-                print(f"Debug: test_actual shape before reshape: {test_actual.shape}")
-                test_actual = test_actual.reshape(-1, OUTPUT_SIZE)
-                print(f"Debug: test_actual shape after reshape: {test_actual.shape}")
-                test_actual = test_scaler.inverse_transform(test_actual)
-                print(
-                    f"Debug: test_actual shape after inverse_transform: {test_actual.shape}"
-                )
-
-                test_mse = np.mean((ensemble_predictions - test_actual) ** 2)
-                test_mae = np.mean(np.abs(ensemble_predictions - test_actual))
-
-                if args.use_wandb:
-                    wandb.log(
-                        {
-                            f"{model_type}_{dataset_type}_test_mse": test_mse,
-                            f"{model_type}_{dataset_type}_test_mae": test_mae,
-                        }
-                    )
-
-                # Plot test predictions
-                for steps in [10, 100, 500]:
-                    plot_predictions(
-                        test_actual[:steps],
-                        ensemble_predictions[:steps],
-                        model_type,
-                        dataset_type,
-                        steps,
-                        "test",
-                    )
-                    plot_velocities(
-                        test_actual[:steps],
-                        ensemble_predictions[:steps],
-                        model_type,
-                        dataset_type,
-                        steps,
-                        "test",
-                    )
+                            plot_trajectory(
+                                actual,
+                                predictions,
+                                f"{model_type} Trajectory",
+                                "validation",
+                                model_type,
+                                dataset_type,
+                                steps,
+                                is_mini=args.mini,
+                            )
+                            plot_velocity(
+                                actual,
+                                predictions,
+                                DT,
+                                f"{model_type} Velocity",
+                                "validation",
+                                model_type,
+                                dataset_type,
+                                steps,
+                                is_mini=args.mini,
+                            )
+                    avg_val_mse = np.mean([res[0] for res in fold_results])
+                    avg_val_mae = np.mean([res[1] for res in fold_results])
+                    if args.use_wandb:
+                        wandb.log(
+                            {
+                                f"{model_type}_{dataset_type}_avg_val_mse": avg_val_mse,
+                                f"{model_type}_{dataset_type}_avg_val_mae": avg_val_mae,
+                            }
+                        )
 
             except Exception as e:
                 print(f"\nError occurred for {model_type} on {dataset_type}: {str(e)}")

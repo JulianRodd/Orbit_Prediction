@@ -48,7 +48,7 @@ LEARNING_RATE = 0.001
 EARLY_STOPPING_PATIENCE = 10
 NUM_LSTM_LAYERS = 3
 BIDIRECTIONAL = True
-
+ 
 
 
 # Mini network parameters
