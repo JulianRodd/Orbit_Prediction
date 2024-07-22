@@ -3,3 +3,4 @@ wandb/*
 *.pkl
 *.png
 *.csv
+datasets.zip
