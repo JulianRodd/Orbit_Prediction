@@ -5,7 +5,10 @@
 \usepackage{hyperref}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{caption}
 \title{Solving the Two and Three Body Problems with Deep Learning Models}
 \author{Your Name}
 \date{}
@@ -55,7 +58,7 @@ The application of deep learning to gravity field modeling has been explored by 
 
 \subsection{Challenges and Future Directions}
 
-While machine learning approaches show promise, challenges remain in ensuring physical constraints are properly enforced, avoiding overfitting, and generalizing to new scenarios. The physics-informed approach helps address some of these issues, but there is still work to be done in optimizing network architectures, incorporating more physics knowledge, and expanding to more complex N-body scenarios \cite{martin2022physics}.
+While machine learning approaches show promise, challenges remain in ensuring physical constraints are properly enforced, avoiding overfitting, and generalizing to new scenarios. The physics-informed approach helps address some of these issues, but there is still work to be done in optimizing network architectures, incorporating more physics knowledge, and expanding to more complex N-body scenarios \cite{meng2022physics}.
 
 This literature review provides context for our study, highlighting the potential of machine learning approaches in solving gravitational problems and identifying areas where our work can contribute to the field.
 
@@ -260,49 +263,48 @@ By incorporating these physics-inspired loss terms, the PINN architecture aims t
 
 \subsection{Data Generation and Simulation}
 
-\subsubsection{Two-Body Problem}
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{images/two_body_trajectory.png}
-    \caption{Trajectory of the spaceship in the two-body problem}
-    \label{fig:two_body_trajectory}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/two_body_velocity.png}
-    \caption{Absolute velocity of the spaceship over time in the two-body problem}
-    \label{fig:two_body_velocity}
-\end{figure}
-
-\subsubsection{Two-Body Problem with Increased Acceleration}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/two_body_acceleration_trajectory.png}
-    \caption{Trajectory of the spaceship in the two-body problem with increased acceleration}
-    \label{fig:two_body_acceleration_trajectory}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/two_body_acceleration_velocity.png}
-    \caption{Absolute velocity of the spaceship over time in the two-body problem with increased acceleration}
-    \label{fig:two_body_acceleration_velocity}
-\end{figure}
-
-\subsubsection{Three-Body Problem}
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/three_body_trajectory.png}
-    \caption{Trajectory of the spaceship in the three-body problem}
-    \label{fig:three_body_trajectory}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/three_body_velocity.png}
-    \caption{Absolute velocity of the spaceship over time in the three-body problem}
-    \label{fig:three_body_velocity}
+    \begin{tabular}{cc}
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{images/two_body_trajectory.png}
+            \caption{Trajectory of the spaceship in the two-body problem}
+            \label{fig:two_body_trajectory}
+        \end{subfigure} &
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{images/two_body_velocity.png}
+            \caption{Absolute velocity of the spaceship over time in the two-body problem}
+            \label{fig:two_body_velocity}
+        \end{subfigure} \\
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{images/two_body_force_increased_acceleration_trajectory.png}
+            \caption{Trajectory of the spaceship in the two-body problem with increased acceleration}
+            \label{fig:two_body_acceleration_trajectory}
+        \end{subfigure} &
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{images/two_body_force_increased_acceleration_velocity.png}
+            \caption{Absolute velocity of the spaceship over time in the two-body problem with increased acceleration}
+            \label{fig:two_body_acceleration_velocity}
+        \end{subfigure} \\
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{images/three_body_trajectory.png}
+            \caption{Trajectory of the spaceship in the three-body problem}
+            \label{fig:three_body_trajectory}
+        \end{subfigure} &
+        \begin{subfigure}[b]{0.45\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{images/three_body_velocity.png}
+            \caption{Absolute velocity of the spaceship over time in the three-body problem}
+            \label{fig:three_body_velocity}
+        \end{subfigure}
+    \end{tabular}
+    \caption{Trajectories and velocities of the spaceship in different problem scenarios}
+    \label{fig:data_generation_simulation}
 \end{figure}
 
 \subsection{Model Performance Comparison}
@@ -310,87 +312,77 @@ By incorporating these physics-inspired loss terms, the PINN architecture aims t
 \subsubsection{Prediction Accuracy}
 \begin{table}[h]
     \centering
-    \begin{tabular}{lccc}
+    \begin{tabular}{lccccccccc}
         \hline
-        Model & Two-Body MSE & Two-Body with Acceleration MSE & Three-Body MSE \\
+        & \multicolumn{3}{c}{Two-Body MSE} & \multicolumn{3}{c}{Two-Body with Acceleration MSE} & \multicolumn{3}{c}{Three-Body MSE} \\
+        Model & Train & Validation & Test & Train & Validation & Test & Train & Validation & Test \\
         \hline
-        Simple Regression & & & \\
-        LSTM & & & \\
-        PINN & & & \\
+        Simple Regression & 0.00603 & 15002601.904 & 2.5000e+10 & 0.00729 & 33963152.580 & 4.1926e+30 & 0.01667 & 1522.347 & 1.2038e+30 \\
+        LSTM & 0.10847 & 0.23377 & 5000000.000 & 0.10857 & 0.23377 & 6.0000e+07 & 0.10857 & 0.23377 & 7.0000e+07 \\
+        PINN & 0.06501 & 0.12870 & 17633803.161 & 0.06390 & 0.13145 & 1.8297e+07 & 0.06620 & 0.13016 & 1.8557e+08 \\
         \hline
     \end{tabular}
-    \caption{Mean Squared Error (MSE) for different models across problem types}
+    \caption{Average Mean Squared Error (MSE) for different models across problem types, averaged over 5 folds}
     \label{tab:model_mse}
 \end{table}
 
+
 \subsubsection{Long-term Prediction}
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{images/long_term_prediction_10.png}
-        \caption{10 steps}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{images/long_term_prediction_100.png}
-        \caption{100 steps}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.3\textwidth}
-        \includegraphics[width=\textwidth]{images/long_term_prediction_500.png}
-        \caption{500 steps}
-    \end{subfigure}
-    \caption{Long-term prediction accuracy for different time horizons}
-    \label{fig:long_term_prediction}
-\end{figure}
-
-\subsection{Impact of Uncertainty and Increased Acceleration}
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{lccc}
-        \hline
-        Model & Base MSE & Uncertainty MSE & Increased Acceleration MSE \\
-        \hline
-        Simple Regression & & & \\
-        LSTM & & & \\
-        PINN & & & \\
-        \hline
-    \end{tabular}
-    \caption{Impact of uncertainty and increased acceleration on model performance (MSE)}
-    \label{tab:uncertainty_acceleration_impact}
-\end{table}
+% \begin{figure}[h]
+%     \centering
+%     \begin{subfigure}[b]{0.3\textwidth}
+%         \includegraphics[width=\textwidth]{images/long_term_prediction_10.png}
+%         \caption{10 steps}
+%     \end{subfigure}
+%     \begin{subfigure}[b]{0.3\textwidth}
+%         \includegraphics[width=\textwidth]{images/long_term_prediction_100.png}
+%         \caption{100 steps}
+%     \end{subfigure}
+%     \begin{subfigure}[b]{0.3\textwidth}
+%         \includegraphics[width=\textwidth]{images/long_term_prediction_500.png}
+%         \caption{500 steps}
+%     \end{subfigure}
+%     \caption{Long-term prediction accuracy for different time horizons}
+%     \label{fig:long_term_prediction}
+% \end{figure}
 
 \subsection{Autoregressive Approach Performance}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/autoregressive_performance.png}
-    \caption{Performance comparison of autoregressive models with varying input sequence lengths}
-    \label{fig:autoregressive_performance}
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{images/autoregressive_performance.png}
+%     \caption{Performance comparison of autoregressive models with varying input sequence lengths}
+%     \label{fig:autoregressive_performance}
+% \end{figure}
 
 \subsection{PINN Performance and Physical Consistency}
 
 \begin{table}[h]
-    \centering
-    \begin{tabular}{lccc}
-        \hline
-        Metric & Two-Body & Two-Body with Acceleration & Three-Body \\
-        \hline
-        MSE & & & \\
-        Energy Conservation Error & & & \\
-        Momentum Conservation Error & & & \\
-        \hline
-    \end{tabular}
-    \caption{PINN performance and physical consistency metrics}
-    \label{tab:pinn_performance}
+  \centering
+  \begin{tabular}{lcccc}
+      \hline
+      Metric & Two-Body & Two-Body with Acceleration & Three-Body \\
+      \hline
+      MSE (Train) & 0.06501 & 0.06390 & 0.06620 \\
+      MSE (Validation) & 0.12870 & 0.13145 & 0.13016 \\
+      Laplace Loss (Train) & 0.004352 & 0.004382 & 0.000653 \\
+      Laplace Loss (Validation) & 0.034064 & 0.031080 & 0.048927 \\
+      Energy Conservation Error (Train) & 0.482130 & 0.475219 & 0.475332 \\
+      Energy Conservation Error (Validation) & 0.480371 & 0.466133 & 0.391311 \\
+      Momentum Conservation Error (Train) & 0.087750 & 0.086272 & 0.090016 \\
+      Momentum Conservation Error (Validation) & 0.090204 & 0.093825 & 0.086836 \\
+      \hline
+  \end{tabular}
+  \caption{PINN performance and physical consistency metrics averaged over 5 folds}
+  \label{tab:pinn_performance}
 \end{table}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\textwidth]{images/pinn_physical_consistency.png}
-    \caption{Visualization of PINN's physical consistency in predictions}
-    \label{fig:pinn_physical_consistency}
-\end{figure}
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{images/pinn_physical_consistency.png}
+%     \caption{Visualization of PINN's physical consistency in predictions}
+%     \label{fig:pinn_physical_consistency}
+% \end{figure}
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -400,6 +392,9 @@ Our results show that PINNs offer advantages in terms of prediction accuracy, ro
 
 Future work could explore more advanced PINN architectures, incorporate higher-order numerical integration schemes, and investigate the application of these models to real-world orbital prediction scenarios.
 
+
+\bibliographystyle{plain}
+\bibliography{references}
 \section{Appendices}
 
 \appendix

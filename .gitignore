@@ -5,3 +5,4 @@ wandb/*
 *.csv
 datasets.zip
 datasets.zip
+plots.zip

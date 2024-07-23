@@ -5,3 +5,6 @@ python code/regression.py --model_types PINN SimpleRegression LSTM --datasets tw
 
 
 python code/inference.py --model_types PINN SimpleRegression LSTM --datasets two_body three_body --folds 0 1 2 3 4 --mini
+
+
+python code/inference.py --model_types SimpleRegression --datasets two_body three_body --folds 0 1 2 3 4
