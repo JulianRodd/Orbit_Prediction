@@ -1,4 +1,5 @@
 import logging
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -94,6 +95,7 @@ def generic_train(
     scaler,
     model_type,
     use_wandb,
+    dataset_type
 ):
     logger.info(f"Starting training for {model_type} (Fold {fold})")
     best_val_loss = float("inf")
@@ -122,9 +124,10 @@ def generic_train(
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
+                os.makedirs(f"checkpoints/{model_type}/{dataset_type}/", exist_ok=True)
                 torch.save(
                     model.state_dict(),
-                    f"checkpoints/{model_type.lower()}_fold{fold}.pth",
+                    f"checkpoints/{model_type}/{dataset_type}/{model_type.lower()}_fold{fold}.pth",
                 )
                 early_stopping_counter = 0
                 logger.info(f"New best model saved for {model_type} (Fold {fold})")

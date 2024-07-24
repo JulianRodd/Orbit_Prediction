@@ -56,6 +56,7 @@ def main():
             datasets=args.datasets,
             mini=args.mini,
             seed=args.seed,
+            prediction_steps=args.prediction_steps,
             use_wandb=args.use_wandb,
         )
     elif args.mode == "inference":

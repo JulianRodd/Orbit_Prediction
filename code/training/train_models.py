@@ -1,16 +1,17 @@
-import os
 import logging
-from tqdm import tqdm
-import wandb
 import traceback
 
+from tqdm import tqdm
 from training.constants import NUM_FOLDS
-from training.utils import set_seed, load_data
-from training.mlp.train import train_mlp
 from training.lstm.train import train_lstm
+from training.mlp.train import train_mlp
 from training.pinn.train import train_pinn
+from training.utils import load_data, set_seed
+
+import wandb
 
 logger = logging.getLogger(__name__)
+
 
 def train_models(model_types, datasets, mini, seed, prediction_steps, use_wandb=True):
     set_seed(seed)
@@ -37,7 +38,7 @@ def train_models(model_types, datasets, mini, seed, prediction_steps, use_wandb=
                         "prediction_steps": prediction_steps,
                         "seed": seed,
                     },
-                    mode=wandb_mode
+                    mode=wandb_mode,
                 )
 
                 for fold in tqdm(range(NUM_FOLDS), desc="Processing folds"):
@@ -47,23 +48,56 @@ def train_models(model_types, datasets, mini, seed, prediction_steps, use_wandb=
                         val_data, _ = load_data(dataset_type, "val", fold)
                         logger.debug(f"Data loaded for fold {fold}")
 
-                        if model_type == "SimpleRegression":
-                            train_mlp(train_data, val_data, scaler, fold, mini, prediction_steps, use_wandb)
+                        if model_type == "MLP":
+                            train_mlp(
+                                train_data,
+                                val_data,
+                                scaler,
+                                fold,
+                                mini,
+                                prediction_steps,
+                                use_wandb,
+                                dataset_type,
+                            )
                         elif model_type == "LSTM":
-                            train_lstm(train_data, val_data, scaler, fold, mini, prediction_steps, use_wandb)
+                            train_lstm(
+                                train_data,
+                                val_data,
+                                scaler,
+                                fold,
+                                mini,
+                                prediction_steps,
+                                use_wandb,
+                                dataset_type,
+                            )
                         elif model_type == "PINN":
-                            train_pinn(train_data, val_data, scaler, fold, mini, prediction_steps, use_wandb)
+                            train_pinn(
+                                train_data,
+                                val_data,
+                                scaler,
+                                fold,
+                                mini,
+                                prediction_steps,
+                                use_wandb,
+                                dataset_type,
+                            )
                         else:
                             raise ValueError(f"Unknown model type: {model_type}")
 
                     except Exception as e:
-                        logger.error(f"Error in fold {fold} for {model_type} on {dataset_type}: {str(e)}")
+                        logger.error(
+                            f"Error in fold {fold} for {model_type} on {dataset_type}: {str(e)}"
+                        )
                         logger.error(traceback.format_exc())
                         if use_wandb:
-                            wandb.log({"error": str(e), "traceback": traceback.format_exc()})
+                            wandb.log(
+                                {"error": str(e), "traceback": traceback.format_exc()}
+                            )
 
             except Exception as e:
-                logger.error(f"Error in wandb initialization for {model_type} on {dataset_type}: {str(e)}")
+                logger.error(
+                    f"Error in wandb initialization for {model_type} on {dataset_type}: {str(e)}"
+                )
                 logger.error(traceback.format_exc())
 
             finally:

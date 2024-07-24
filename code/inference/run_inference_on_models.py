@@ -1,9 +1,10 @@
 import logging
 
 import torch
+from constants import DEVICE
 from tqdm import tqdm
 
-from .constants import DEVICE, NUM_FOLDS
+from .constants import NUM_FOLDS
 from .plotting import plot_all
 from .utils import load_data, load_model, predict_trajectory
 
@@ -22,7 +23,7 @@ def run_inference_on_models(
             try:
                 for split in ["train", "val", "test"]:
                     logger.info(f"Processing {split} set")
-                    data, scaler = load_data(dataset_type, split)
+                    data, scaler = load_data(dataset_type, split, 0)
 
                     models = []
                     for fold in range(NUM_FOLDS):
@@ -44,12 +45,13 @@ def run_inference_on_models(
                                 .iloc[:3][["x", "y", "Vx", "Vy"]]
                                 .values
                             )
+
                             initial_sequence = torch.FloatTensor(initial_sequence).to(
                                 DEVICE
                             )
 
                             predictions = predict_trajectory(
-                                models, initial_sequence, scaler, steps
+                                models, initial_sequence, scaler, steps, model_type
                             )
                             actual = (
                                 data[data["spaceship_id"] == spaceship_id]

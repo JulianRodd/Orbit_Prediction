@@ -3,7 +3,8 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from data_generation.constants import FIGURE_LOCATION, HEAVY_BODY1_POSITION, HEAVY_BODY2_POSITION
+from constants import FIGURE_LOCATION
+from data_generation.constants import HEAVY_BODY1_POSITION, HEAVY_BODY2_POSITION
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"

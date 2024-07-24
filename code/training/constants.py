@@ -1,6 +1,6 @@
 import logging
 
-import torch
+from constants import DEVICE
 
 # Set up logging
 logging.basicConfig(
@@ -9,11 +9,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Model and dataset types
-MODEL_TYPES = ["SimpleRegression", "LSTM", "PINN"]
+MODEL_TYPES = ["MLP", "LSTM", "PINN"]
 DATASET_TYPES = ["two_body", "two_body_force_increased_acceleration", "three_body"]
 
-# Device configuration
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 logger.info(f"Using device: {DEVICE}")
 
 # Data parameters

@@ -2,9 +2,9 @@ import torch.nn as nn
 from training.constants import DEVICE
 
 
-class SimpleRegression(nn.Module):
+class MLP(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
-        super(SimpleRegression, self).__init__()
+        super(MLP, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, hidden_size)
         self.fc3 = nn.Linear(hidden_size, output_size)
@@ -20,4 +20,4 @@ class SimpleRegression(nn.Module):
 
 
 def create_mlp_model(input_size, hidden_size, output_size):
-    return SimpleRegression(input_size, hidden_size, output_size).to(DEVICE)
+    return MLP(input_size, hidden_size, output_size).to(DEVICE)

@@ -1,4 +1,5 @@
 import logging
+import os
 
 import torch
 import torch.optim as optim
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def train_pinn(
-    train_loader, val_loader, scaler, fold, is_mini, prediction_steps, use_wandb
+    train_loader, val_loader, scaler, fold, is_mini, prediction_steps, use_wandb, dataset_type
 ):
     try:
         logger.info(f"Initializing PINN model for fold {fold}")
@@ -56,7 +57,8 @@ def train_pinn(
 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
-                    torch.save(model.state_dict(), f"checkpoints/pinn_fold{fold}.pth")
+                    os.makedirs(f"checkpoints/pinn/{dataset_type}/", exist_ok=True)
+                    torch.save(model.state_dict(), f"checkpoints/pinn/{dataset_type}/pinn_fold{fold}.pth")
                     early_stopping_counter = 0
                     logger.info(f"New best model saved for PINN (Fold {fold})")
                 else:

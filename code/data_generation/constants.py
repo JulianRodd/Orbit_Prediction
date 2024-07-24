@@ -1,10 +1,5 @@
 import numpy as np
-import torch
 
-# Folders
-FIGURE_LOCATION = "images/"
-CACHE_FOLDER = "cache/"
-CHECKPOINT_LOCATION = "checkpoints/"
 
 # Physical constants
 G = 6.67430e-11  # Gravitational constant (m^3 kg^-1 s^-2)
@@ -25,12 +20,6 @@ RELATIVE_UNCERTAINTY = 0.01
 SMALL_ACCELERATION_CHANGE = 0.01
 TOTAL_STEPS = 10000  # Total number of time steps
 UNCERTAINTY_PERIOD = DT * TOTAL_STEPS / 10
-# Device configuration
-DEVICE = torch.device(
-    "mps"
-    if torch.backends.mps.is_available()
-    else "cuda" if torch.cuda.is_available() else "cpu"
-)
 
 # Dataset parameters
 N_STEPS = 3
