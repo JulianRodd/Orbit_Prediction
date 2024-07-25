@@ -16,7 +16,14 @@ logger = logging.getLogger(__name__)
 
 
 def train_pinn(
-    train_loader, val_loader, scaler, fold, is_mini, prediction_steps, use_wandb, dataset_type
+    train_loader,
+    val_loader,
+    scaler,
+    fold,
+    is_mini,
+    prediction_steps,
+    use_wandb,
+    dataset_type,
 ):
     try:
         logger.info(f"Initializing PINN model for fold {fold}")
@@ -58,7 +65,10 @@ def train_pinn(
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
                     os.makedirs(f"checkpoints/pinn/{dataset_type}/", exist_ok=True)
-                    torch.save(model.state_dict(), f"checkpoints/pinn/{dataset_type}/pinn_fold{fold}.pth")
+                    torch.save(
+                        model.state_dict(),
+                        f"checkpoints/pinn/{dataset_type}/pinn_fold{fold}.pth",
+                    )
                     early_stopping_counter = 0
                     logger.info(f"New best model saved for PINN (Fold {fold})")
                 else:
@@ -77,7 +87,7 @@ def train_pinn(
 
         # Make predictions
         try:
-            model.load_state_dict(torch.load(f"checkpoints/pinn_fold{fold}.pth"))
+            model.load_state_dict(torch.load(f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth"))
             initial_sequence = next(iter(val_loader))[0][0].to(DEVICE)
             for steps in prediction_steps:
                 predictions = predict_future(model, initial_sequence, scaler, steps)
@@ -85,7 +95,11 @@ def train_pinn(
                     val_loader.dataset.sequences[:steps, -1, :].cpu().numpy()
                 )
                 plot_predictions(
-                    actual, predictions, f"PINN_{steps}_steps_fold{fold}", use_wandb
+                    actual,
+                    predictions,
+                    f"PINN_{steps}_steps_fold{fold}",
+                    dataset_type,
+                    use_wandb,
                 )
         except Exception as e:
             logger.error(f"Error during PINN prediction for fold {fold}: {str(e)}")

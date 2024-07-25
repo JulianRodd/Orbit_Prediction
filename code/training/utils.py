@@ -148,7 +148,7 @@ def generic_train(
     # Make predictions
     try:
         model.load_state_dict(
-            torch.load(f"checkpoints/{model_type.lower()}_fold{fold}.pth")
+            torch.load(f"checkpoints/{model_type}/{dataset_type}/{model_type.lower()}_fold{fold}.pth")
         )
         initial_sequence = next(iter(val_loader))[0][0].to(DEVICE)
         for steps in prediction_steps:
@@ -240,7 +240,7 @@ def predict_future(model, initial_sequence, scaler, steps):
         raise
 
 
-def plot_predictions(actual, predicted, title, use_wandb=True):
+def plot_predictions(actual, predicted, title, dataset_type, use_wandb=True):
     try:
         plt.figure(figsize=(12, 6))
         plt.plot(actual[:, 0], actual[:, 1], label="Actual", color="blue")
@@ -270,10 +270,9 @@ def plot_predictions(actual, predicted, title, use_wandb=True):
         plt.xlabel("Time step")
         plt.ylabel("Velocity magnitude")
         plt.legend()
+        plt.savefig(f"plots/{dataset_type}/{title}_velocity_plot.png", dpi=300, bbox_inches="tight")
 
-        if use_wandb:
-            wandb.log({f"{title}_velocity_plot": wandb.Image(plt)})
-        plt.close()
+
 
         logger.info(f"Plots created for {title}")
     except Exception as e:

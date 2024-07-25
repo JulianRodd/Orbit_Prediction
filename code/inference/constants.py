@@ -1,12 +1,16 @@
 import training.lstm.constants as lstm_constants
-
+import training.mlp.constants as mlp_constants
+import training.pinn.constants as pinn_constants
 # Model parameters
 NUM_FOLDS = 5
-INPUT_SIZE = 12  # 3 time steps * 4 features (x, y, vx, vy)
-HIDDEN_SIZE = 256
+MLP_INPUT_SIZE = mlp_constants.INPUT_SIZE
+MLP_HIDDEN_SIZE = mlp_constants.HIDDEN_SIZE
+MLP_OUTPUT_SIZE = mlp_constants.OUTPUT_SIZE
+PINN_INPUT_SIZE = pinn_constants.INPUT_SIZE
+PINN_HIDDEN_SIZE = pinn_constants.HIDDEN_SIZE
+PINN_OUTPUT_SIZE = pinn_constants.OUTPUT_SIZE
 LSTM_HIDDEN_SIZE = lstm_constants.HIDDEN_SIZE
-OUTPUT_SIZE = 4
-NUM_LSTM_LAYERS = lstm_constants.NUM_LAYERS
+LSTM_NUM_LAYERS = lstm_constants.NUM_LAYERS
 LSTM_INPUT_SIZE = lstm_constants.INPUT_SIZE
 LSTM_OUTPUT_SIZE = lstm_constants.OUTPUT_SIZE
 # Inference parameters

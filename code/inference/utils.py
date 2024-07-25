@@ -8,14 +8,17 @@ from sklearn.preprocessing import MinMaxScaler
 
 from .constants import (
     CHECKPOINT_BASE_PATH,
-    HIDDEN_SIZE,
-    INPUT_SIZE,
     LSTM_HIDDEN_SIZE,
     LSTM_INPUT_SIZE,
+    LSTM_NUM_LAYERS,
     LSTM_OUTPUT_SIZE,
     MINI_CHECKPOINT_BASE_PATH,
-    NUM_LSTM_LAYERS,
-    OUTPUT_SIZE,
+    MLP_HIDDEN_SIZE,
+    MLP_INPUT_SIZE,
+    MLP_OUTPUT_SIZE,
+    PINN_HIDDEN_SIZE,
+    PINN_INPUT_SIZE,
+    PINN_OUTPUT_SIZE,
 )
 
 logger = logging.getLogger(__name__)
@@ -57,17 +60,19 @@ def load_model(model_type, dataset_type, fold, use_mini_model):
         if model_type == "MLP":
             from training.mlp.architecture import create_mlp_model
 
-            model = create_mlp_model(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
+            model = create_mlp_model(MLP_INPUT_SIZE, MLP_HIDDEN_SIZE, MLP_OUTPUT_SIZE)
         elif model_type == "LSTM":
             from training.lstm.architecture import create_lstm_model
 
             model = create_lstm_model(
-                LSTM_INPUT_SIZE, LSTM_HIDDEN_SIZE, NUM_LSTM_LAYERS, LSTM_OUTPUT_SIZE
+                LSTM_INPUT_SIZE, LSTM_HIDDEN_SIZE, LSTM_NUM_LAYERS, LSTM_OUTPUT_SIZE
             )
         elif model_type == "PINN":
             from training.pinn.architecture import create_pinn_model
 
-            model = create_pinn_model(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
+            model = create_pinn_model(
+                PINN_INPUT_SIZE, PINN_HIDDEN_SIZE, PINN_OUTPUT_SIZE
+            )
         else:
             raise ValueError(f"Unknown model type: {model_type}")
 
