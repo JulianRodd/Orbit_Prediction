@@ -17,6 +17,7 @@ LSTM_OUTPUT_SIZE = lstm_constants.OUTPUT_SIZE
 DEFAULT_PREDICTION_STEPS = [10, 100, 500]
 
 # Paths
+CSV_OUTPUT_FOLDER = "output"
 CHECKPOINT_BASE_PATH = "checkpoints"
 MINI_CHECKPOINT_BASE_PATH = "mini_checkpoints"
 

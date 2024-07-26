@@ -161,6 +161,7 @@ def generic_train(
                     actual,
                     predictions,
                     f"{model_type}_{steps}_steps_fold{fold}",
+                    dataset_type,
                     use_wandb,
                 )
             except Exception as e:
@@ -255,9 +256,8 @@ def plot_predictions(actual, predicted, title, dataset_type, use_wandb=True):
         plt.xlabel("X position")
         plt.ylabel("Y position")
         plt.legend()
-
-        if use_wandb:
-            wandb.log({f"{title}_plot": wandb.Image(plt)})
+        os.makedirs(f"plots/{dataset_type}/", exist_ok=True)
+        plt.savefig(f"plots/{dataset_type}/{title}_trajectory_plot.png", dpi=300, bbox_inches="tight")
         plt.close()
 
         # Plot velocity
@@ -270,6 +270,7 @@ def plot_predictions(actual, predicted, title, dataset_type, use_wandb=True):
         plt.xlabel("Time step")
         plt.ylabel("Velocity magnitude")
         plt.legend()
+        os.makedirs(f"plots/{dataset_type}/", exist_ok=True)
         plt.savefig(f"plots/{dataset_type}/{title}_velocity_plot.png", dpi=300, bbox_inches="tight")
 
 

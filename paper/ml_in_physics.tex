@@ -1,11 +1,13 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
-\documentclass{article}
+\usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{caption}
@@ -310,21 +312,382 @@ By incorporating these physics-inspired loss terms, the PINN architecture aims t
 \subsection{Model Performance Comparison}
 
 \subsubsection{Prediction Accuracy}
-\begin{table}[h]
-    \centering
-    \begin{tabular}{lccccccccc}
-        \hline
-        & \multicolumn{3}{c}{Two-Body MSE} & \multicolumn{3}{c}{Two-Body with Acceleration MSE} & \multicolumn{3}{c}{Three-Body MSE} \\
-        Model & Train & Validation & Test & Train & Validation & Test & Train & Validation & Test \\
-        \hline
-        Simple Regression & 0.00603 & 15002601.904 & 2.5000e+10 & 0.00729 & 33963152.580 & 4.1926e+30 & 0.01667 & 1522.347 & 1.2038e+30 \\
-        LSTM & 0.10847 & 0.23377 & 5000000.000 & 0.10857 & 0.23377 & 6.0000e+07 & 0.10857 & 0.23377 & 7.0000e+07 \\
-        PINN & 0.06501 & 0.12870 & 17633803.161 & 0.06390 & 0.13145 & 1.8297e+07 & 0.06620 & 0.13016 & 1.8557e+08 \\
-        \hline
-    \end{tabular}
-    \caption{Average Mean Squared Error (MSE) for different models across problem types, averaged over 5 folds}
-    \label{tab:model_mse}
+% \begin{table}[htbp]
+%   \centering
+%   \small
+%   \begin{tabular}{llccccccc}
+%   \hline
+%   Problem & Model & \multicolumn{5}{c}{Fold MSE} & Mean MSE & Std Dev \\
+%   \cline{3-7}
+%   & & 1 & 2 & 3 & 4 & 5 & & \\
+%   \hline
+%   \multirow{9}{*}{Two-Body}
+%   & \multirow{3}{*}{Simple Regression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cline{2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cline{2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \hline
+%   \multirow{9}{*}{Two-Body with Acceleration}
+%   & \multirow{3}{*}{Simple Regression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cline{2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cline{2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \hline
+%   \multirow{9}{*}{Three-Body}
+%   & \multirow{3}{*}{Simple Regression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cline{2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cline{2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \hline
+%   \end{tabular}
+%   \caption{Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
+%   \label{tab:model_mse_detailed}
+% \end{table}
+
+
+% \begin{table}[htbp]
+%   \centering
+%   \small
+%   \begin{tabular}{@{}llccccccc@{}}
+%   \toprule
+%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multicolumn{5}{c}{Fold Position MSE} & \multirow{2}{*}{Mean} & \multirow{2}{*}{Std Dev} \\
+%   \cmidrule(lr){3-7}
+%   & & 1 & 2 & 3 & 4 & 5 & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \bottomrule
+%   \end{tabular}
+%   \caption{Position Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
+%   \label{tab:model_position_mse}
+% \end{table}
+% \begin{table}[htbp]
+%   \centering
+%   \small
+%   \begin{tabular}{@{}llccccccc@{}}
+%   \toprule
+%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multicolumn{5}{c}{Fold Velocity MSE} & \multirow{2}{*}{Mean} & \multirow{2}{*}{Std Dev} \\
+%   \cmidrule(lr){3-7}
+%   & & 1 & 2 & 3 & 4 & 5 & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \bottomrule
+%   \end{tabular}
+%   \caption{Velocity Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
+%   \label{tab:model_velocity_mse}
+% \end{table}
+
+
+% \begin{table}[htbp]
+%   \centering
+%   \small
+%   \begin{tabular}{@{}llccccccc@{}}
+%   \toprule
+%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multicolumn{5}{c}{Fold Combined MSE} & \multirow{2}{*}{Mean} & \multirow{2}{*}{Std Dev} \\
+%   \cmidrule(lr){3-7}
+%   & & 1 & 2 & 3 & 4 & 5 & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%       & & & & & & & \\
+%       & & & & & & & & \\
+%       & & & & & & & & \\
+%   \bottomrule
+%   \end{tabular}
+%   \caption{Combined Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
+%   \label{tab:model_combined_mse}
+% \end{table}
+
+\begin{table}[htbp]
+  \centering
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}llccccccccc@{}}
+  \toprule
+  \multirow{3}{*}{\textbf{Problem}} & \multirow{3}{*}{\textbf{Model}} & \multirow{3}{*}{\textbf{Set}} & \multicolumn{2}{c}{\textbf{10 Steps}} & \multicolumn{2}{c}{\textbf{100 Steps}} & \multicolumn{2}{c}{\textbf{500 Steps}} \\
+  \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+  & & & \textbf{Pos} & \textbf{Vel} & \textbf{Pos} & \textbf{Vel} & \textbf{Pos} & \textbf{Vel} \\
+  & & & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} \\
+  \midrule
+  \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Two-Body}}}
+  & \multirow{3}{*}{MLP}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \cmidrule(lr){2-9}
+  & \multirow{3}{*}{LSTM}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \cmidrule(lr){2-9}
+  & \multirow{3}{*}{PINN}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \midrule
+  \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Two-Body Accel.}}}
+  & \multirow{3}{*}{MLP}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \cmidrule(lr){2-9}
+  & \multirow{3}{*}{LSTM}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \cmidrule(lr){2-9}
+  & \multirow{3}{*}{PINN}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \midrule
+  \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Three-Body}}}
+  & \multirow{3}{*}{MLP}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \cmidrule(lr){2-9}
+  & \multirow{3}{*}{LSTM}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \cmidrule(lr){2-9}
+  & \multirow{3}{*}{PINN}
+  & Train & & & & & & \\
+  & & Val & & & & & & \\
+  & & Test & & & & & & \\
+  \bottomrule
+  \end{tabular}
+  \caption{Mean Squared Error (MSE) for different models across problem types, showing mean (M) and standard deviation (SD) for Position (Pos) and Velocity (Vel) at 10, 100, and 500 prediction steps on train, validation, and test sets}
+  \label{tab:model_comprehensive_mse_compact}
 \end{table}
+
+
+% \begin{table}[htbp]
+%   \centering
+%   \tiny
+%   \setlength{\tabcolsep}{2pt}
+%   \begin{tabular}{@{}llccccccccc@{}}
+%   \toprule
+%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multirow{2}{*}{Set} & \multicolumn{2}{c}{10 Steps} & \multicolumn{2}{c}{100 Steps} & \multicolumn{2}{c}{500 Steps} \\
+%   \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+%   & & & Mean & Std & Mean & Std & Mean & Std \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
+%   & \multirow{3}{*}{SimpleRegression}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \midrule
+%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
+%   & \multirow{3}{*}{SimpleRegression}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{LSTM}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \cmidrule(lr){2-9}
+%   & \multirow{3}{*}{PINN}
+%   & Train & & & & & & \\
+%   & & Val & & & & & & \\
+%   & & Test & & & & & & \\
+%   \bottomrule
+%   \end{tabular}
+%   \caption{Comprehensive Mean Squared Error (MSE) for different models across problem types, showing mean and standard deviation for 10, 100, and 500 prediction steps on train, validation, and test sets}
+%   \label{tab:model_comprehensive_mse_wide}
+% \end{table}
 
 
 \subsubsection{Long-term Prediction}

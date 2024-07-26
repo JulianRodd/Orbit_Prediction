@@ -1,4 +1,5 @@
 import logging
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -24,20 +25,38 @@ from .constants import (
 logger = logging.getLogger(__name__)
 
 
+import numpy as np
+import pandas as pd
+
+
+def calculate_mse(actual, predicted):
+    position_mse = np.mean((actual[:, :2] - predicted[:, :2]) ** 2)
+    velocity_mse = np.mean((actual[:, 2:] - predicted[:, 2:]) ** 2)
+    combined_mse = np.mean((actual - predicted) ** 2)
+    return position_mse, velocity_mse, combined_mse
+
+
 def load_data(dataset_type, split, fold=None):
     try:
+        scaler = MinMaxScaler()
+        columns_to_scale = ["x", "y", "Vx", "Vy"]
         if split == "test":
             df = pd.read_csv(
                 f"datasets/{dataset_type}/{split}/{dataset_type}_{split}.csv"
             )
+            train_df = pd.read_csv(
+                f"datasets/{dataset_type}/train/{dataset_type}_train_fold0.csv"
+            )
+            scaler.fit(train_df[columns_to_scale])
+            df[columns_to_scale] = scaler.transform(df[columns_to_scale])
         else:
             df = pd.read_csv(
                 f"datasets/{dataset_type}/{split}/{dataset_type}_{split}_fold{fold}.csv"
             )
 
-        scaler = MinMaxScaler()
-        columns_to_scale = ["x", "y", "Vx", "Vy"]
-        df[columns_to_scale] = scaler.fit_transform(df[columns_to_scale])
+            df[columns_to_scale] = scaler.fit_transform(df[columns_to_scale])
+
+
 
         return df, scaler
     except Exception as e:
@@ -86,31 +105,55 @@ def load_model(model_type, dataset_type, fold, use_mini_model):
         raise
 
 
-def predict_trajectory(models, initial_sequence, scaler, steps, model_type):
+def denormalize_data(data, scaler):
+    """Denormalize the data using the provided scaler."""
+    if isinstance(data, np.ndarray):
+        # Clip values to a reasonable range before inverse transform
+        data_clipped = np.clip(data, -1e10, 1e10)
+        return scaler.inverse_transform(data_clipped)
+    elif isinstance(data, torch.Tensor):
+        data_numpy = data.cpu().numpy()
+        data_clipped = np.clip(data_numpy, -1e10, 1e10)
+        return scaler.inverse_transform(data_clipped)
+    else:
+        raise TypeError("Data must be either a numpy array or a torch Tensor")
+
+
+def predict_trajectory(
+    models: Union[torch.nn.Module, List[torch.nn.Module]],
+    initial_sequence: torch.Tensor,
+    scaler,
+    steps: int,
+    model_type: str,
+):
     try:
         current_input = initial_sequence.clone()
         predictions = []
 
         with torch.no_grad():
             for _ in range(steps):
-
                 if model_type == "MLP":
                     input = current_input.unsqueeze(0)
                 elif model_type == "LSTM":
                     input = current_input.unsqueeze(0)
+                else:  # PINN or other models
+                    input = current_input.flatten().unsqueeze(0)
+
+                if isinstance(models, list):
+                    # Ensemble prediction
+                    model_outputs = [model(input) for model in models]
+                    output = torch.mean(torch.stack(model_outputs), dim=0)
                 else:
-                    input = current_input.flatten()
-                model_outputs = [model(input) for model in models]
-                ensemble_output = torch.mean(torch.stack(model_outputs), dim=0).squeeze(
-                    0
-                )
-                predictions.append(ensemble_output.cpu().numpy())
+                    # Single model prediction
+                    output = models(input)
+
+                predictions.append(output.squeeze().cpu().numpy())
                 current_input = torch.cat(
-                    (current_input[1:], ensemble_output.unsqueeze(0)), 0
+                    (current_input[1:], output.squeeze().unsqueeze(0)), 0
                 )
 
         predictions = np.array(predictions)
-        predictions = scaler.inverse_transform(predictions)
+        predictions = denormalize_data(predictions, scaler)
         logger.debug(f"Trajectory predicted for {steps} steps")
         return predictions
     except Exception as e:

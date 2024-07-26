@@ -67,7 +67,7 @@ def train_pinn(
                     os.makedirs(f"checkpoints/pinn/{dataset_type}/", exist_ok=True)
                     torch.save(
                         model.state_dict(),
-                        f"checkpoints/pinn/{dataset_type}/pinn_fold{fold}.pth",
+                        f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth",
                     )
                     early_stopping_counter = 0
                     logger.info(f"New best model saved for PINN (Fold {fold})")
