@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper, twocolumn]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{multirow}
 \usepackage{amsmath}
@@ -12,29 +12,26 @@
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{caption}
-\title{Solving the Two and Three Body Problems with Deep Learning Models}
+\usepackage{xcolor}
+
+\title{Solving the Two and Three Body Problems with Deep Learning Models \\
+  \large Machine Learning in Physics Course Exam}
 \author{Julian Roddeman (s1080491)}
 \date{\today}
 
 \begin{document}
 
-\maketitle
-
-\begin{abstract}
-  This study addresses the two-body and three-body gravitational problems using deep learning models, with a focus on Physics-Informed Neural Networks (PINNs). We cover data generation for various orbital scenarios, implement and compare different neural network architectures (MLP, LSTM, and PINN), and evaluate their performance in predicting orbital trajectories. Our approach demonstrates the potential of machine learning techniques in solving complex gravitational problems, particularly highlighting the advantages of physics-informed methods. The complete codebase for this project is available on GitHub at \url{https://github.com/JulianRodd/Orbit_Prediction}.
-  \end{abstract}
-
+\twocolumn[
+\begin{@twocolumnfalse}
+  \maketitle
+  \begin{abstract}
+    This study addresses the two-body and three-body gravitational problems using deep learning models, with a focus on Physics-Informed Neural Networks (PINNs). We cover data generation for various orbital scenarios, implement and compare different neural network architectures (MLP, LSTM, and PINN), and evaluate their performance in predicting orbital trajectories. Our approach demonstrates the potential of machine learning techniques in solving complex gravitational problems, particularly highlighting the advantages of physics-informed methods. The complete codebase for this project is available on GitHub at \url{https://github.com/JulianRodd/Orbit_Prediction}.
+    \end{abstract}
+\end{@twocolumnfalse}
+]
   \section{Introduction}
   \label{sec:introduction}
-  The two-body and three-body problems are fundamental challenges in celestial mechanics. This study explores the application of deep learning models to solve these problems, addressing the following key aspects of the assignment:
-
-  \begin{itemize}
-      \item Simulation of two-body and three-body problems with varying initial conditions and increased acceleration scenarios.
-      \item Implementation and comparison of different neural network architectures: Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Networks (PINNs).
-      \item Evaluation of model performance in predicting orbital trajectories for different time horizons (10, 100, and 500 steps).
-      \item Analysis of the advantages of incorporating physical constraints in neural networks through PINNs.
-      \item Assessment of model robustness under different levels of measurement uncertainty.
-  \end{itemize}
+  The two-body and three-body problems are fundamental challenges in celestial mechanics. This study explores the application of deep learning models to solve these problems, addressing several key aspects of the assignment. We begin by simulating two-body and three-body problems with varying initial conditions and increased acceleration scenarios. We then implement and compare different neural network architectures, including Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Networks (PINNs). Our evaluation focuses on model performance in predicting orbital trajectories for different time horizons, specifically 10, 100, and 500 steps. We analyze the advantages of incorporating physical constraints in neural networks through PINNs, aiming to improve prediction accuracy and physical consistency. Finally, we assess model robustness under different levels of measurement uncertainty, reflecting real-world challenges in astronomical observations. Through this comprehensive approach, we aim to demonstrate the potential of machine learning techniques in solving complex gravitational problems and provide insights into their applicability in celestial mechanics.
 
 \section{Literature Review}
 \label{sec:literature}
@@ -66,25 +63,25 @@ This comprehensive data generation approach provides a robust foundation for tra
 To address the challenge of predicting orbital dynamics, we implemented and compared three neural network architectures: Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Network (PINN). Each architecture was designed to capture different aspects of the two-body and three-body problems, including scenarios with increased acceleration.
 
 \begin{table}[h]
-\centering
-\small
-\caption{Overview of Model Architectures}
-\label{tab:model-architectures}
-\begin{tabular}{|l|c|c|c|}
-\hline
-\textbf{Feature} & \textbf{MLP} & \textbf{LSTM} & \textbf{PINN} \\
-\hline
-Input Size & 12 & 12 & 12 \\
-Hidden Layers & 3 & 2 & 4 \\
-Hidden Size & 256 & 128 & 256 \\
-Output Size & 4 & 4 & 4 \\
-Activation & LeakyReLU & ReLU & Tanh \\
-Dropout Rate & 0.2 & 0.2 & 0.1 \\
-Normalization & Batch Norm & Layer Norm & Batch Norm \\
-Residual Connections & Yes & Yes & Yes \\
-\hline
-\end{tabular}
-\end{table}
+  \centering
+  \scriptsize
+  \caption{Overview of Model Architectures}
+  \label{tab:model-architectures}
+  \begin{tabular}{@{}llll@{}}
+  \toprule
+  \textbf{Feature} & \textbf{MLP} & \textbf{LSTM} & \textbf{PINN} \\
+  \midrule
+  Input Size & 12 & 12 & 12 \\
+  Hidden Layers & 3 & 2 & 4 \\
+  Hidden Size & 256 & 128 & 256 \\
+  Output Size & 4 & 4 & 4 \\
+  Activation & LeakyReLU & ReLU & Tanh \\
+  Dropout Rate & 0.2 & 0.2 & 0.1 \\
+  Normalization & Batch & Layer & Batch \\
+  Residual Conn. & Yes & Yes & Yes \\
+  \bottomrule
+  \end{tabular}
+  \end{table}
 
 The MLP serves as our baseline model, capable of learning non-linear relationships between input features and output predictions. Its architecture includes three hidden layers with 256 neurons each, using LeakyReLU activation and batch normalization.
 
@@ -93,71 +90,37 @@ The LSTM architecture, designed to capture temporal dependencies, utilizes a bid
 The PINN architecture incorporates physical constraints into the learning process. It consists of four hidden layers with 256 neurons each, using Tanh activation and batch normalization. Crucially, it employs a custom loss function that combines mean squared error with physics-based constraints:
 
 \begin{equation}
-L_{total} = L_{MSE} + \lambda(L_{energy} + L_{momentum})
+_{total} = L_{MSE} + \lambda(L_{energy} + L_{momentum})
 \end{equation}
 
 Where $L_{MSE}$ is the standard mean squared error, $L_{energy}$ ensures conservation of total energy (kinetic + potential), and $L_{momentum}$ enforces conservation of linear momentum. The hyperparameter $\lambda$ balances the influence of physical constraints.
 
 All models use residual connections and dropout to facilitate training of deeper networks and prevent overfitting. They were trained using the Adam optimizer with a learning rate of 0.001 and early stopping (patience of 5 epochs). We employed 5-fold cross-validation to ensure robust evaluation of each model's performance.
 
-The selection of these architectures was motivated by their unique strengths:
+The selection of these architectures was motivated by their unique strengths. The Multilayer Perceptron (MLP) provides a simple yet effective baseline for comparison, offering a straightforward approach to learning complex patterns. The Long Short-Term Memory (LSTM) network excels in capturing long-term dependencies in orbital trajectories, making it particularly suitable for time-series prediction tasks. The Physics-Informed Neural Network (PINN) incorporates domain-specific knowledge, potentially leading to more physically plausible predictions by integrating fundamental physical laws into the learning process. By comparing these diverse approaches, we aim to determine the most effective method for predicting orbital dynamics across various scenarios and time horizons. This comparison allows us to balance between purely data-driven learning and physics-informed modeling, providing insights into the strengths and limitations of each approach in the context of celestial mechanics.
 
-\begin{enumerate}
-    \item MLP provides a simple yet effective baseline for comparison.
-    \item LSTM captures long-term dependencies in orbital trajectories.
-    \item PINN incorporates domain-specific knowledge, potentially leading to more physically plausible predictions.
-\end{enumerate}
-
-By comparing these diverse approaches, we aim to determine the most effective method for predicting orbital dynamics across various scenarios and time horizons, balancing between purely data-driven learning and physics-informed modeling.
 \subsubsection{Training Configuration}
-We implemented a consistent training approach across all model architectures to ensure a fair comparison:
-
-\begin{itemize}
-    \item Optimizer: Adam with a learning rate of 0.001
-    \item Loss function:
-        \begin{itemize}
-            \item For MLP and LSTM: Mean Squared Error (MSE)
-            \item For PINN: Custom loss function (detailed below)
-        \end{itemize}
-    \item Batch size: 32
-    \item Maximum epochs: 20
-    \item Early stopping: Patience of 5 epochs
-    \item Cross-validation: 5-fold
-\end{itemize}
-
-Training was conducted for each model type (MLP, LSTM, PINN) on three dataset types: two-body problem, two-body problem with increased acceleration, and three-body problem. We employed 5-fold cross-validation to ensure robust evaluation, with one fold reserved for validation in each training iteration.
+We implemented a consistent training approach across all model architectures to ensure a fair comparison. The Adam optimizer was used with a learning rate of 0.001. For MLP and LSTM models, we employed Mean Squared Error (MSE) as the loss function, while PINN utilized a custom loss function (detailed elsewhere). All models were trained with a batch size of 32 for a maximum of 20 epochs, with early stopping implemented using a patience of 5 epochs. To ensure robust evaluation, we employed 5-fold cross-validation. Training was conducted for each model type (MLP, LSTM, PINN) on three dataset types: the two-body problem, the two-body problem with increased acceleration, and the three-body problem. In each training iteration, one fold was reserved for validation, allowing us to assess model performance on unseen data throughout the training process. This comprehensive approach allowed us to rigorously compare the performance of different model architectures across various gravitational scenarios while minimizing the risk of overfitting.
 
 The \texttt{generic\_train} function in our codebase handles the training loop, implementing early stopping and model checkpointing. Training progress and performance metrics were logged using Weights \& Biases (wandb) for comprehensive experiment tracking.
-
 \subsubsection{Physics-Informed Neural Networks}
 The PINN architecture incorporates physical laws into the learning process through a custom loss function:
-
 \begin{equation}
 L_{\text{total}} = L_{\text{MSE}} + 0.1 \cdot (L_{\text{energy}} + L_{\text{momentum}})
 \end{equation}
-
-Where:
-\begin{itemize}
-    \item $L_{\text{MSE}}$ is the standard mean squared error between predicted and true values.
-    \item $L_{\text{energy}}$ enforces energy conservation:
-    \begin{equation}
-    L_{\text{energy}} = \frac{1}{N} \sum_{i=1}^N (E_{\text{pred},i} - E_{\text{true},i})^2
-    \end{equation}
-    with $E = \frac{1}{2}v^2 - \frac{GM_1}{r}$, where $v$ is velocity, $G$ is the gravitational constant, $M_1$ is the mass of the central body, and $r$ is the distance from the central body.
-
-    \item $L_{\text{momentum}}$ ensures momentum conservation:
-    \begin{equation}
-    L_{\text{momentum}} = \frac{1}{N} \sum_{i=1}^N (p_{\text{pred},i} - p_{\text{true},i})^2
-    \end{equation}
-    where $p = mv$ is the momentum.
-\end{itemize}
-
+In this equation, $L_{\text{MSE}}$ represents the standard mean squared error between predicted and true values. $L_{\text{energy}}$ enforces energy conservation and is defined as:
+\begin{equation}
+L_{\text{energy}} = \frac{1}{N} \sum_{i=1}^N (E_{\text{pred},i} - E_{\text{true},i})^2
+\end{equation}
+where $E = \frac{1}{2}v^2 - \frac{GM_1}{r}$. Here, $v$ is velocity, $G$ is the gravitational constant, $M_1$ is the mass of the central body, and $r$ is the distance from the central body.
+The $L_{\text{momentum}}$ term ensures momentum conservation:
+\begin{equation}
+L_{\text{momentum}} = \frac{1}{N} \sum_{i=1}^N (p_{\text{pred},i} - p_{\text{true},i})^2
+\end{equation}
+with $p = mv$ representing momentum.
 This loss function is implemented in the \texttt{pinn\_loss} function, utilizing PyTorch's automatic differentiation capabilities. The physics-based terms are weighted by a factor of 0.1 to balance their influence with the data-driven MSE loss.
-
 By incorporating these physics-based constraints, the PINN architecture aims to learn solutions that not only fit the data but also respect the underlying physical principles of orbital mechanics. This approach directly addresses the assignment's focus on PINNs and their potential advantages in solving gravitational problems, particularly for complex scenarios like the three-body problem and cases with increased acceleration.
-
 Our implementation allows for a comprehensive comparison between purely data-driven approaches (MLP and LSTM) and the physics-informed method (PINN) across different orbital dynamics scenarios, providing insights into their relative strengths and limitations.
-
 \subsection{Inference and Evaluation}
 
 Our evaluation process encompasses a comprehensive assessment of model performance across all folds and datasets. We employ 5-fold cross-validation, with models trained on each fold evaluated on their respective validation sets and the unseen test set. Performance metrics are calculated using mean squared error (MSE) for both position and velocity predictions, with results aggregated across all folds to provide robust estimates. We evaluate models on three distinct sets: training spaceships (to assess fitting), validation spaceships (for generalization within known scenarios), and test spaceships (for performance on entirely unseen trajectories). For each set, we compute the mean and standard deviation of MSE for both position and velocity predictions, considering prediction horizons of 10, 100, and 500 steps. This approach allows us to assess model performance across different time scales and problem complexities. Importantly, all predictions are made using normalized data and subsequently denormalized for evaluation, ensuring consistent scaling across different orbital scenarios.
@@ -167,51 +130,7 @@ Our evaluation process encompasses a comprehensive assessment of model performan
 
 \subsection{Data Generation and Simulation Results}
 
-Our data generation process simulated orbital dynamics for three distinct scenarios: the two-body problem, the two-body problem with increased acceleration, and the three-body problem. For each scenario, we simulated trajectories for 10 spaceships, providing a diverse dataset for our subsequent machine learning models. Figure \ref{fig:data_generation_simulation} presents a comprehensive overview of the trajectories and velocities for all spaceships across these scenarios.
-
-\begin{figure}[H]
-    \centering
-    \begin{tabular}{cc}
-        \begin{subfigure}[b]{0.45\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{images/two_body_all_trajectories.png}
-            \caption{Trajectories of all 10 spaceships in the two-body problem}
-            \label{fig:two_body_trajectory}
-        \end{subfigure} &
-        \begin{subfigure}[b]{0.45\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{images/two_body_all_velocities.png}
-            \caption{Absolute velocity of all the 10 spaceships over time in the two-body problem}
-            \label{fig:two_body_velocity}
-        \end{subfigure} \\
-        \begin{subfigure}[b]{0.45\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{images/two_body_acc_trajectories.png}
-            \caption{Trajectories of all 10 spaceships in the two-body problem with increased acceleration}
-            \label{fig:two_body_acceleration_trajectory}
-        \end{subfigure} &
-        \begin{subfigure}[b]{0.45\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{images/two_body_acc_all_velocities.png}
-            \caption{Absolute velocity of all the 10 spaceships over time in the two-body problem with increased acceleration}
-            \label{fig:two_body_acceleration_velocity}
-        \end{subfigure} \\
-        \begin{subfigure}[b]{0.45\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{images/three_body_all_trajectories.png}
-            \caption{Trajectories of all 10 spaceships in the three-body problem}
-            \label{fig:three_body_trajectory}
-        \end{subfigure} &
-        \begin{subfigure}[b]{0.45\textwidth}
-            \centering
-            \includegraphics[width=\textwidth]{images/three_body_all_velocities.png}
-            \caption{Absolute velocity of all the 10 spaceships over time in the three-body problem}
-            \label{fig:three_body_velocity}
-        \end{subfigure}
-    \end{tabular}
-    \caption{Trajectories and velocities of spaceships in different orbital scenarios}
-    \label{fig:data_generation_simulation}
-\end{figure}
+Our data generation process simulated orbital dynamics for three distinct scenarios: the two-body problem, the two-body problem with increased acceleration, and the three-body problem. For each scenario, we simulated trajectories for 10 spaceships, providing a diverse dataset for our subsequent machine learning models. Figure \ref{fig:data_generation_simulation} in appendix \ref{sec:appendix_data_generation} presents a comprehensive overview of the trajectories and velocities for all spaceships across these scenarios.
 
 \subsubsection{Two-Body Problem}
 In the standard two-body problem (Figures \ref{fig:two_body_trajectory} and \ref{fig:two_body_velocity}), we observe predominantly circular orbits. There is a little amount of variation between trajectories, which aligns with our expectations given the introduced measurement uncertainties but without the additional force and acceleration. The velocity profiles show consistent periodic patterns, reflecting the stable nature of these orbits.
@@ -226,84 +145,78 @@ The velocity patterns in the three-body problem are particularly noteworthy. We 
 
 This rich variety of behaviors in the three-body problem underscores the challenge it presents for predictive modeling. The sensitive dependence on initial conditions and the complex interplay of gravitational forces create a dataset that will rigorously test the capabilities of our machine learning models, particularly in terms of their ability to generalize and make accurate long-term predictions.
 
-\subsection{Two-Body Problem}
-% - Results for circular orbit predictions
-% - Impact of measurement uncertainty on predictions
-
-\subsection{Two-Body Problem with Increased Acceleration}
-% - Results for predictions with sinusoidal force applied
-% - Effect of increasing acceleration on model performance
-
-\subsection{Three-Body Problem}
-% - Results for the more complex three-body system
-% - Impact of slight changes in initial conditions on predictions
-
 
 \subsection{Model Performance Comparison}
 
+
+Table \ref{tab:model_comprehensive_mse_compact} presents Mean Squared Error (MSE) results for three different models (MLP, LSTM, and PINN) across three problem types (Two-Body, Two-Body with Acceleration, and Three-Body) for various prediction horizons (10, 100, and 500 steps). Several interesting patterns emerge. In the Two-Body Problem, MLP and PINN generally outperform LSTM in position prediction, with PINN showing the lowest standard deviation in short-term predictions, indicating more consistent performance. All models perform similarly in velocity prediction, with slight improvements for longer horizons. For the Two-Body Problem with Acceleration, MLP consistently outperforms both LSTM and PINN across all prediction horizons, while PINN shows the highest MSE and standard deviation, suggesting it struggles with the additional complexity. In the Three-Body Problem, PINN performs best in position prediction for short-term predictions (10 steps), while LSTM shows superior performance for longer prediction horizons (100 and 500 steps) in both position and velocity. Notably, MLP exhibits extremely high MSE for 100-step predictions in this scenario, indicating potential instability. Overall, these results suggest that different models excel in different scenarios: MLP performs well in simpler problems and with added acceleration, LSTM shows strength in long-term predictions for complex systems, and PINN demonstrates advantages in short-term predictions for the most complex (three-body) problem. These findings highlight the importance of choosing the appropriate model based on the specific characteristics of the orbital dynamics problem at hand.
+
+For a visual representation of the models' performance, refer to Appendices \ref{sec:two_body_predictions}, \ref{sec:two_body_acc_predictions}, and \ref{sec:three_body_predictions}, which contain trajectory plots comparing predicted and actual paths for the first spaceship in each scenario, providing a tangible illustration of the models' outputs across different problem types and prediction horizons.
+
+\onecolumn
 \begin{table}[htbp]
   \centering
   \scriptsize
-  \setlength{\tabcolsep}{3pt}
+  \setlength{\tabcolsep}{1.5pt}
   \begin{tabular}{@{}llccccccccc@{}}
   \toprule
-  \multirow{3}{*}{\textbf{Problem}} & \multirow{3}{*}{\textbf{Model}} & \multirow{3}{*}{\textbf{Set}} & \multicolumn{2}{c}{\textbf{10 Steps}} & \multicolumn{2}{c}{\textbf{100 Steps}} & \multicolumn{2}{c}{\textbf{500 Steps}} \\
+  \multirow{3}{*}{\rotatebox[origin=c]{90}{\textbf{Problem}}} & \multirow{3}{*}{\rotatebox[origin=c]{90}{\textbf{Model}}} & \multirow{3}{*}{\rotatebox[origin=c]{90}{\textbf{Set}}} & \multicolumn{2}{c}{\textbf{10 Steps}} & \multicolumn{2}{c}{\textbf{100 Steps}} & \multicolumn{2}{c}{\textbf{500 Steps}} \\
   \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
-  & & & \textbf{Pos} & \textbf{Vel} & \textbf{Pos} & \textbf{Vel} & \textbf{Pos} & \textbf{Vel} \\
-  & & & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} & \textbf{M (SD)} \\
+  & & & \rotatebox[origin=c]{90}{\textbf{Pos M (SD)}} & \rotatebox[origin=c]{90}{\textbf{Vel M (SD)}} & \rotatebox[origin=c]{90}{\textbf{Pos M (SD)}} & \rotatebox[origin=c]{90}{\textbf{Vel M (SD)}} & \rotatebox[origin=c]{90}{\textbf{Pos M (SD)}} & \rotatebox[origin=c]{90}{\textbf{Vel M (SD)}} \\
   \midrule
   \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Two-Body}}}
-  & \multirow{3}{*}{MLP}
-  & Train & 5.011e+7 (3.271e+6) & 0.619 (1.777e-4) & 5.152e+7 (3.796e+6) & 0.590 (4.815e-4) & 5.189e+7 (3.714e+6) & 0.427 (7.640e-4) \\
-  & & Val & 4.994e+7 (3.464e+6) & 0.619 (1.907e-4) & 5.085e+7 (3.591e+6) & 0.590 (5.069e-4) & 5.118e+7 (3.428e+6) & 0.427 (8.208e-4) \\
-  & & Test & 5.007e+7 (3.312e+6) & 0.619 (1.804e-4) & 5.138e+7 (3.765e+6) & 0.590 (4.866e-4) & 5.175e+7 (3.669e+6) & 0.427 (7.756e-4) \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{MLP}}
+  & Tr & 5.01e+7 (3.27e+6) & 0.62 (1.78e-4) & 5.15e+7 (3.80e+6) & 0.59 (4.82e-4) & 5.19e+7 (3.71e+6) & \textbf{0.43} (7.64e-4) \\
+  & & Va & \textbf{4.99e+7} (3.46e+6) & 0.62 (1.91e-4) & 5.08e+7 (3.59e+6) & 0.59 (5.07e-4) & 5.12e+7 (3.43e+6) & \textbf{0.43} (8.21e-4) \\
+  & & Te & \textbf{5.01e+7} (3.31e+6) & 0.62 (1.80e-4) & 5.14e+7 (3.77e+6) & 0.59 (4.87e-4) & 5.17e+7 (3.67e+6) & \textbf{0.43} (7.76e-4) \\
   \cmidrule(lr){2-9}
-  & \multirow{3}{*}{LSTM}
-  & Train & 7.181e+7 (2.250e+7) & 0.619 (5.333e-4) & 7.740e+7 (2.432e+7) & 0.589 (8.629e-4) & 7.731e+7 (2.456e+7) & 0.426 (8.414e-4) \\
-  & & Val & 7.031e+7 (2.367e+7) & 0.619 (5.708e-4) & 7.640e+7 (2.585e+7) & 0.589 (9.061e-4) & 7.648e+7 (2.615e+7) & 0.426 (8.995e-4) \\
-  & & Test & 7.151e+7 (2.275e+7) & 0.619 (5.410e-4) & 7.720e+7 (2.464e+7) & 0.589 (8.721e-4) & 7.715e+7 (2.489e+7) & 0.426 (8.533e-4) \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{LSTM}}
+  & Tr & 7.18e+7 (2.25e+7) & 0.62 (5.33e-4) & 7.74e+7 (2.43e+7) & 0.59 (8.63e-4) & 7.73e+7 (2.46e+7) & 0.43 (8.41e-4) \\
+  & & Va & 7.03e+7 (2.37e+7) & 0.62 (5.71e-4) & 7.64e+7 (2.59e+7) & 0.59 (9.06e-4) & 7.65e+7 (2.62e+7) & 0.43 (9.00e-4) \\
+  & & Te & 7.15e+7 (2.28e+7) & 0.62 (5.41e-4) & 7.72e+7 (2.46e+7) & 0.59 (8.72e-4) & 7.72e+7 (2.49e+7) & 0.43 (8.53e-4) \\
   \cmidrule(lr){2-9}
-  & \multirow{3}{*}{PINN}
-  & Train & & & & & & \\
-  & & Val & & & & & & \\
-  & & Test & & & & & & \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{PINN}}
+  & Tr & 5.03e+7 (\textbf{2.16e+6}) & \textbf{0.62} (1.03e-4) & 5.27e+7 (3.95e+6) & 0.59 (5.13e-4) & \textbf{5.06e+7} (5.47e+6) & 0.43 (8.49e-4) \\
+  & & Va & 5.00e+7 (\textbf{2.11e+6}) & \textbf{0.62} (1.02e-4) & 5.18e+7 (3.37e+6) & 0.59 (4.99e-4) & \textbf{4.92e+7} (4.16e+6) & 0.43 (7.29e-4) \\
+  & & Te & 5.03e+7 (\textbf{2.15e+6}) & \textbf{0.62} (1.03e-4) & 5.25e+7 (3.86e+6) & 0.59 (5.11e-4) & \textbf{5.03e+7} (5.27e+6) & 0.43 (8.30e-4) \\
   \midrule
   \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Two-Body Accel.}}}
-  & \multirow{3}{*}{MLP}
-  & Train & 4.294e+7 (4.643e+6) & 0.580 (7.606e-5) & 4.235e+7 (4.777e+6) & 0.551 (1.780e-4) & 4.307e+7 (3.575e+6) & 0.395 (6.895e-4) \\
-  & & Val & 4.316e+7 (4.928e+6) & 0.580 (7.221e-5) & 4.246e+7 (5.098e+6) & 0.551 (1.573e-4) & 4.327e+7 (3.779e+6) & 0.395 (7.030e-4) \\
-  & & Test & 4.299e+7 (4.703e+6) & 0.580 (7.535e-5) & 4.237e+7 (4.843e+6) & 0.551 (1.704e-4) & 4.311e+7 (3.618e+6) & 0.395 (6.919e-4) \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{MLP}}
+  & Tr & \textbf{4.29e+7} (4.64e+6) & \textbf{0.58} (7.61e-5) & \textbf{4.24e+7} (4.78e+6) & \textbf{0.55} (1.78e-4) & \textbf{4.31e+7} (3.58e+6) & \textbf{0.40} (6.90e-4) \\
+  & & Va & \textbf{4.32e+7} (4.93e+6) & \textbf{0.58} (7.22e-5) & \textbf{4.25e+7} (5.10e+6) & \textbf{0.55} (1.57e-4) & \textbf{4.33e+7} (3.78e+6) & \textbf{0.40} (7.03e-4) \\
+  & & Te & \textbf{4.30e+7} (4.70e+6) & \textbf{0.58} (7.54e-5) & \textbf{4.24e+7} (4.84e+6) & \textbf{0.55} (1.70e-4) & \textbf{4.31e+7} (3.62e+6) & \textbf{0.40} (6.92e-4) \\
   \cmidrule(lr){2-9}
-  & \multirow{3}{*}{LSTM}
-  & Train & 4.920e+7 (2.721e+6) & 0.580 (9.302e-5) & 4.797e+7 (3.003e+6) & 0.551 (1.811e-4) & 4.816e+7 (2.850e+6) & 0.395 (3.673e-4) \\
-  & & Val & 4.890e+7 (2.782e+6) & 0.580 (7.645e-5) & 4.843e+7 (2.933e+6) & 0.551 (1.820e-4) & 4.851e+7 (2.871e+6) & 0.395 (2.779e-4) \\
-  & & Test & 4.914e+7 (2.734e+6) & 0.580 (9.062e-5) & 4.806e+7 (2.994e+6) & 0.551 (1.785e-4) & 4.823e+7 (2.858e+6) & 0.395 (3.518e-4) \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{LSTM}}
+  & Tr & 4.92e+7 (2.72e+6) & 0.58 (9.30e-5) & 4.80e+7 (3.00e+6) & 0.55 (1.81e-4) & 4.82e+7 (2.85e+6) & 0.40 (3.67e-4) \\
+  & & Va & 4.89e+7 (2.78e+6) & 0.58 (7.65e-5) & 4.84e+7 (2.93e+6) & 0.55 (1.82e-4) & 4.85e+7 (2.87e+6) & 0.40 (2.78e-4) \\
+  & & Te & 4.91e+7 (2.73e+6) & 0.58 (9.06e-5) & 4.81e+7 (2.99e+6) & 0.55 (1.79e-4) & 4.82e+7 (2.86e+6) & 0.40 (3.52e-4) \\
   \cmidrule(lr){2-9}
-  & \multirow{3}{*}{PINN}
-  & Train & & & & & & \\
-  & & Val & & & & & & \\
-  & & Test & & & & & & \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{PINN}}
+  & Tr & 7.76e+7 (3.16e+7) & 0.58 (4.57e-4) & 7.32e+7 (2.30e+7) & 0.55 (1.48e-3) & 7.00e+7 (2.71e+7) & 0.40 (1.13e-3) \\
+  & & Va & 6.98e+7 (2.56e+7) & 0.58 (4.53e-4) & 6.85e+7 (2.07e+7) & 0.55 (1.50e-3) & 6.52e+7 (2.56e+7) & 0.40 (1.05e-3) \\
+  & & Te & 7.61e+7 (3.07e+7) & 0.58 (4.57e-4) & 7.23e+7 (2.27e+7) & 0.55 (1.48e-3) & 6.90e+7 (2.69e+7) & 0.40 (1.12e-3) \\
   \midrule
   \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Three-Body}}}
-  & \multirow{3}{*}{MLP}
-  & Train & 6.720e+8 (5.585e+8) & 0.155 (9.301e-3) & 4.025e+26 (1.035e+27) & 4.904e+14 (1.261e+15) & 9.262e+9 (1.541e+10) & 0.153 (9.857e-3) \\
-  & & Val & 4.257e+8 (3.633e+8) & 0.155 (1.008e-2) & 9.298e+25 (2.630e+26) & 1.133e+14 (3.204e+14) & 9.211e+9 (1.535e+10) & 0.152 (9.787e-3) \\
-  & & Test & 5.428e+8 (4.931e+8) & 0.134 (2.223e-3) & 1.522e+26 (3.045e+26) & 1.855e+14 (3.710e+14) & 9.266e+9 (1.534e+10) & 0.141 (3.218e-3) \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{MLP}}
+  & Tr & 6.72e+8 (5.59e+8) & 0.16 (9.30e-3) & 4.03e+26 (1.04e+27) & 4.90e+14 (1.26e+15) & 9.26e+9 (1.54e+10) & 0.15 (9.86e-3) \\
+  & & Va & 4.26e+8 (3.63e+8) & 0.16 (1.01e-2) & 9.30e+25 (2.63e+26) & 1.13e+14 (3.20e+14) & 9.21e+9 (1.54e+10) & 0.15 (9.79e-3) \\
+  & & Te & 5.43e+8 (4.93e+8) & 0.13 (2.22e-3) & 1.52e+26 (3.04e+26) & 1.86e+14 (3.71e+14) & 9.27e+9 (1.53e+10) & 0.14 (3.22e-3) \\
   \cmidrule(lr){2-9}
-  & \multirow{3}{*}{LSTM}
-  & Train & 6.627e+9 (6.262e+9) & 0.148 (9.991e-3) & 2.177e+10 (1.293e+10) & 0.143 (1.067e-2) & 2.466e+10 (1.460e+10) & 0.141 (1.062e-2) \\
-  & & Val & 7.231e+9 (7.672e+9) & 0.147 (1.032e-2) & 2.329e+10 (1.414e+10) & 0.142 (1.042e-2) & 2.644e+10 (1.596e+10) & 0.139 (1.273e-2) \\
-  & & Test & 3.722e+9 (1.314e+9) & 0.129 (6.068e-3) & 2.057e+10 (1.037e+10) & 0.126 (6.818e-3) & 2.397e+10 (1.276e+10) & 0.130 (6.665e-3) \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{LSTM}}
+  & Tr & 6.63e+9 (6.26e+9) & 0.15 (9.99e-3) & \textbf{2.18e+10} (1.29e+10) & \textbf{0.14} (1.07e-2) & \textbf{2.47e+10} (1.46e+10) & \textbf{0.14} (1.06e-2) \\
+  & & Va & 7.23e+9 (7.67e+9) & 0.15 (1.03e-2) & \textbf{2.33e+10} (1.41e+10) & \textbf{0.14} (1.04e-2) & \textbf{2.64e+10} (1.60e+10) & \textbf{0.14} (1.27e-2) \\
+  & & Te & 3.72e+9 (1.31e+9) & 0.13 (6.07e-3) & \textbf{2.06e+10} (1.04e+10) & \textbf{0.13} (6.82e-3) & \textbf{2.40e+10} (1.28e+10) & \textbf{0.13} (6.67e-3) \\
   \cmidrule(lr){2-9}
-  & \multirow{3}{*}{PINN}
-  & Train & & & & & & \\
-  & & Val & & & & & & \\
-  & & Test & & & & & & \\
+  & \multirow{3}{*}{\rotatebox[origin=c]{90}{PINN}}
+  & Tr & \textbf{1.41e+9} (2.25e+9) & 0.15 (9.40e-3) & 2.38e+10 (4.51e+10) & 0.15 (1.03e-2) & 3.30e+10 (6.33e+10) & 0.15 (1.06e-2) \\
+  & & Va & \textbf{1.02e+9} (1.62e+9) & 0.16 (1.05e-2) & 2.65e+10 (4.66e+10) & 0.15 (1.08e-2) & 3.74e+10 (6.63e+10) & 0.15 (1.30e-2) \\
+  & & Te & \textbf{4.90e+8} (3.95e+8) & \textbf{0.13} (2.41e-3) & 2.29e+10 (4.26e+10) & 0.13 (4.80e-3) & 3.36e+10 (6.34e+10) & 0.14 (6.14e-3) \\
   \bottomrule
   \end{tabular}
-  \caption{Mean Squared Error (MSE) for different models across problem types, showing mean (M) and standard deviation (SD) for Position (Pos) and Velocity (Vel) at 10, 100, and 500 prediction steps on train, validation, and test sets}
+  \caption{Mean Squared Error (MSE) for different models across problem types, showing mean (M) and standard deviation (SD) for Position (Pos) and Velocity (Vel) at 10, 100, and 500 prediction steps on train (Tr), validation (Va), and test (Te) sets}
   \label{tab:model_comprehensive_mse_compact}
 \end{table}
+\twocolumn
 
 \section{Discussion}
 % - Analyze the strengths and weaknesses of each model type (MLP, LSTM, PINN) for orbital prediction tasks
@@ -314,29 +227,97 @@ This rich variety of behaviors in the three-body problem underscores the challen
 % - Compare the autoregressive approach (LSTM) with the simple regression approach (MLP)
 % - Evaluate the effectiveness of using 3 previous time steps as input for predictions
 
+Our study on applying deep learning models to the two-body and three-body gravitational problems has yielded several noteworthy insights:
+
+Model Performance Across Problem Types:
+
+In the two-body problem, MLP and PINN outperformed LSTM in position prediction, with PINN showing the most consistent performance (lowest standard deviation) for short-term predictions. This suggests that for simpler orbital scenarios, the physical constraints incorporated in PINNs provide a significant advantage.
+For the two-body problem with increased acceleration, MLP consistently outperformed both LSTM and PINN. This unexpected result indicates that the additional complexity introduced by the sinusoidal force may be more easily captured by the flexible MLP architecture.
+In the three-body problem, PINN excelled in short-term predictions (10 steps), while LSTM showed superior performance for longer horizons (100 and 500 steps). This highlights the LSTM's strength in capturing complex temporal dependencies in chaotic systems.
+
+Impact of Physical Constraints in PINNs:
+The incorporation of energy and momentum conservation in the PINN loss function led to improved short-term predictions, especially in the complex three-body scenario. However, its performance degraded for longer prediction horizons, suggesting that the physical constraints might be overly restrictive for long-term predictions in chaotic systems.
+Short-term vs. Long-term Predictions:
+All models showed degrading performance as the prediction horizon increased from 10 to 500 steps. This degradation was most pronounced in the three-body problem, underscoring the challenge of long-term predictions in chaotic systems.
+Model Robustness to Measurement Uncertainty:
+The 1\% relative uncertainty introduced in our data generation process affected all models. However, PINNs showed more consistent performance (lower standard deviations) in the presence of this uncertainty, particularly for the two-body problem.
+Effectiveness of Input Sequence Length:
+Using the last 3 positions and velocities as input proved sufficient for short-term predictions but may be inadequate for longer horizons, especially in the three-body problem. This suggests that increasing the input sequence length could potentially improve long-term predictions, particularly for LSTM models.
+Computational Efficiency:
+While not explicitly measured, we observed that MLP models were generally faster to train compared to LSTM and PINN models. This efficiency could be a crucial factor in real-time applications or when computational resources are limited.
 \section{Conclusion}
 \label{sec:conclusion}
-% - Summarize the key findings of the study
-% - Highlight the most effective model architecture for orbital predictions based on your results
-% - Discuss the potential of PINNs for improving predictions in gravitational problems
-% - Address the limitations of the current approach and potential areas for future research
-% - Reflect on the broader implications of using machine learning for solving complex physical problems
 
-This study demonstrates the potential of deep learning models, particularly Physics-Informed Neural Networks, in solving the two-body and three-body problems. We have addressed all questions posed in the assignment, providing insights into data generation, model implementation, performance comparison, and the impact of uncertainty and increased acceleration.
+Our investigation into applying deep learning models to gravitational problems has yielded significant insights into the strengths and limitations of different architectures for predicting orbital dynamics. The MLP model demonstrated superior performance in the two-body problem with increased acceleration, achieving a mean squared error (MSE) of 4.30e+7 for position and 0.40 for velocity in 500-step predictions on the test set. This outperformed both LSTM and PINN models, suggesting that MLPs are particularly effective for scenarios with additional forces beyond standard gravitation.
 
-Our results show that PINNs offer advantages in terms of prediction accuracy, robustness to uncertainty, and long-term stability compared to traditional neural networks. However, challenges remain, particularly in modeling the complex dynamics of the three-body problem and making very long-term predictions.
+In the standard two-body problem, PINNs showed the most consistent performance, with the lowest standard deviation in short-term predictions (2.15e+6 for 10-step position predictions on the test set). This consistency underscores the value of incorporating physical constraints in the model architecture, particularly for well-understood gravitational scenarios.
 
-Future work could explore more advanced PINN architectures, incorporate higher-order numerical integration schemes, and investigate the application of these models to real-world orbital prediction scenarios.
+The LSTM model excelled in the three-body problem for longer prediction horizons, achieving an MSE of 2.40e+10 for position and 0.13 for velocity in 500-step predictions on the test set. This performance notably surpassed both MLP and PINN models, highlighting LSTM's capability to capture complex temporal dependencies in chaotic systems.
 
-- Future work: experiment with predicting veloctiy and trajectory differnet models
+However, all models showed degrading performance as the prediction horizon increased from 10 to 500 steps, particularly in the three-body problem. This degradation was most pronounced in the MLP model, which exhibited instability in 100-step predictions for the three-body problem with an MSE of 1.52e+26 for position.
+
+The introduction of 1\% measurement uncertainty affected all models, but PINNs demonstrated more robustness to this noise, particularly in the two-body problem. This suggests that physics-informed approaches may offer advantages in scenarios with noisy or imperfect data.
+
+Our study has also revealed limitations in the current approach. The fixed input sequence of 3 time steps may be inadequate for longer-term predictions, especially in complex scenarios. Future work should explore adaptive input lengths and more sophisticated physical constraints in PINN models. Additionally, investigating model performance on real astronomical data would provide valuable insights into practical applicability.
+
+In conclusion, while our deep learning models show significant promise in solving gravitational problems, there remains substantial room for improvement, particularly in long-term predictions of chaotic systems. The MLP's unexpected success in scenarios with additional forces, LSTM's strength in complex temporal dynamics, and PINN's consistency in physically constrained scenarios all point towards the potential of hybrid models that combine these strengths. This study contributes to the ongoing effort to bridge the gap between traditional physics-based methods and modern machine learning techniques in celestial mechanics, paving the way for more accurate and physically consistent orbital predictions.
+
 \bibliographystyle{plain}
 \bibliography{references}
 
+\onecolumn
 \appendix
-\section{Two-Body Problem Trajectory Predictions}
+
+\section{Generated Trajectories and Velocities for Different Orbital Scenarios}
+\label{sec:appendix_data_generation}
 \begin{figure}[H]
   \centering
-  \caption{Two-Body Problem: Model Predictions vs. Actual Trajectories}
+  \begin{tabular}{cc}
+      \begin{subfigure}[b]{0.45\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{images/two_body_all_trajectories.png}
+          \caption{Trajectories of all 10 spaceships in the two-body problem}
+          \label{fig:two_body_trajectory}
+      \end{subfigure} &
+      \begin{subfigure}[b]{0.45\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{images/two_body_all_velocities.png}
+          \caption{Absolute velocity of all the 10 spaceships over time in the two-body problem}
+          \label{fig:two_body_velocity}
+      \end{subfigure} \\
+      \begin{subfigure}[b]{0.45\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{images/two_body_acc_trajectories.png}
+          \caption{Trajectories of all 10 spaceships in the two-body problem with increased acceleration}
+          \label{fig:two_body_acceleration_trajectory}
+      \end{subfigure} &
+      \begin{subfigure}[b]{0.45\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{images/two_body_acc_all_velocities.png}
+          \caption{Absolute velocity of all the 10 spaceships over time in the two-body problem with increased acceleration}
+          \label{fig:two_body_acceleration_velocity}
+      \end{subfigure} \\
+      \begin{subfigure}[b]{0.45\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{images/three_body_all_trajectories.png}
+          \caption{Trajectories of all 10 spaceships in the three-body problem}
+          \label{fig:three_body_trajectory}
+      \end{subfigure} &
+      \begin{subfigure}[b]{0.45\textwidth}
+          \centering
+          \includegraphics[width=\textwidth]{images/three_body_all_velocities.png}
+          \caption{Absolute velocity of all the 10 spaceships over time in the three-body problem}
+          \label{fig:three_body_velocity}
+      \end{subfigure}
+  \end{tabular}
+  \caption{Trajectories and velocities of spaceships in different orbital scenarios}
+  \label{fig:data_generation_simulation}
+\end{figure}
+\section{Two-Body Problem Trajectory Predictions}
+\label{sec:two_body_predictions}
+\begin{figure}[H]
+  \centering
+  \caption{Two-Body Problem: Model Predictions vs. Actual Trajectories for first spaceship}
   \label{fig:two_body_predictions}
   \begin{tabular}{cccc}
       & Train & Validation & Test \\
@@ -356,9 +337,10 @@ Future work could explore more advanced PINN architectures, incorporate higher-o
 \end{figure}
 
 \section{Two-Body Problem with Increased Acceleration Trajectory Predictions}
+\label{sec:two_body_acc_predictions}
 \begin{figure}[H]
   \centering
-  \caption{Two-Body Problem with Increased Acceleration: Model Predictions vs. Actual Trajectories}
+  \caption{Two-Body Problem with Increased Acceleration: Model Predictions vs. Actual Trajectories for first spaceship}
   \label{fig:two_body_acc_predictions}
   \begin{tabular}{cccc}
       & Train & Validation & Test \\
@@ -379,9 +361,10 @@ Future work could explore more advanced PINN architectures, incorporate higher-o
 
 
 \section{Three-Body Problem Trajectory Predictions}
+\label{sec:three_body_predictions}
 \begin{figure}[H]
   \centering
-  \caption{Three-Body Problem: Model Predictions vs. Actual Trajectories}
+  \caption{Three-Body Problem: Model Predictions vs. Actual Trajectories for first spaceship}
   \label{fig:three_body_predictions}
   \begin{tabular}{cccc}
       & Train & Validation & Test \\
