@@ -8,7 +8,13 @@ from tqdm import tqdm
 from .constants import NUM_FOLDS
 from .csv_utils import export_consolidated_results, export_results_to_csv
 from .plotting import plot_all
-from .utils import calculate_mse, load_data, load_model, predict_trajectory
+from .utils import (
+    calculate_mse,
+    denormalize_data,
+    load_data,
+    load_model,
+    predict_trajectory,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,16 +44,17 @@ def run_inference_on_models(
                     all_position_mse = {steps: [] for steps in prediction_steps}
                     all_velocity_mse = {steps: [] for steps in prediction_steps}
 
+                    # Load test data only once
+                    if split == "test":
+                        data, scaler = load_data(dataset_type, split, None)
+
                     for fold in range(NUM_FOLDS):
-                        if split == "test" and fold != 0:
-                            continue
-                        data, scaler = load_data(
-                            dataset_type, split, fold if split != "test" else None
-                        )
+                        if split != "test":
+                            data, scaler = load_data(dataset_type, split, fold)
 
                         for spaceship_id in tqdm(
                             data["spaceship_id"].unique(),
-                            desc=f"Processing {split} spaceships",
+                            desc=f"Processing {split} spaceships, fold {fold}",
                         ):
                             spaceship_data = data[data["spaceship_id"] == spaceship_id]
                             initial_sequence = spaceship_data.iloc[:3][
@@ -71,16 +78,28 @@ def run_inference_on_models(
                                     position_mse, velocity_mse, _ = calculate_mse(
                                         actual[:steps], predictions
                                     )
-                                    all_position_mse[steps].append(position_mse)
-                                    all_velocity_mse[steps].append(velocity_mse)
 
-                                    if split == "test" and fold == 0:
+                                    if np.isfinite(position_mse) and np.isfinite(
+                                        velocity_mse
+                                    ):
+                                        all_position_mse[steps].append(position_mse)
+                                        all_velocity_mse[steps].append(velocity_mse)
+
+                                    # Plot only for the first fold and first spaceship
+                                    if (
+                                        fold == 0
+                                        and spaceship_id
+                                        == data["spaceship_id"].unique()[0]
+                                    ):
                                         plot_all(
-                                            actual[:steps],
+                                            denormalize_data(actual[:steps], scaler),
                                             predictions,
-                                            spaceship_data[
-                                                ["x", "y", "Vx", "Vy"]
-                                            ].values,
+                                            denormalize_data(
+                                                spaceship_data[
+                                                    ["x", "y", "Vx", "Vy"]
+                                                ].values,
+                                                scaler,
+                                            ),
                                             model_type,
                                             dataset_type,
                                             steps,
@@ -95,12 +114,24 @@ def run_inference_on_models(
 
                     # Calculate mean and std for each prediction step
                     for steps in prediction_steps:
-                        pos_mean, pos_std = np.mean(all_position_mse[steps]), np.std(
-                            all_position_mse[steps]
-                        )
-                        vel_mean, vel_std = np.mean(all_velocity_mse[steps]), np.std(
-                            all_velocity_mse[steps]
-                        )
+                        if all_position_mse[steps] and all_velocity_mse[steps]:
+                            pos_mean, pos_std = np.mean(
+                                all_position_mse[steps]
+                            ), np.std(all_position_mse[steps])
+                            vel_mean, vel_std = np.mean(
+                                all_velocity_mse[steps]
+                            ), np.std(all_velocity_mse[steps])
+                        else:
+                            pos_mean, pos_std, vel_mean, vel_std = (
+                                np.nan,
+                                np.nan,
+                                np.nan,
+                                np.nan,
+                            )
+                            logger.warning(
+                                f"No valid MSE values for {split}, {steps} steps"
+                            )
+
                         all_results[dataset_type][model_type][f"{split}_{steps}"] = {
                             "position": (pos_mean, pos_std),
                             "velocity": (vel_mean, vel_std),

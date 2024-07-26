@@ -20,6 +20,7 @@ from .constants import (
     PINN_HIDDEN_SIZE,
     PINN_INPUT_SIZE,
     PINN_OUTPUT_SIZE,
+    NUM_FOLDS
 )
 
 logger = logging.getLogger(__name__)
@@ -40,29 +41,29 @@ def load_data(dataset_type, split, fold=None):
     try:
         scaler = MinMaxScaler()
         columns_to_scale = ["x", "y", "Vx", "Vy"]
+
+        # Load and concatenate all training folds to fit the scaler
+        train_data = []
+        for i in range(NUM_FOLDS):
+            train_df = pd.read_csv(f"datasets/{dataset_type}/train/{dataset_type}_train_fold{i}.csv")
+            train_data.append(train_df[columns_to_scale])
+        all_train_data = pd.concat(train_data, axis=0)
+
+        # Fit the scaler on all training data
+        scaler.fit(all_train_data)
+
+        # Load and transform the requested dataset
         if split == "test":
-            df = pd.read_csv(
-                f"datasets/{dataset_type}/{split}/{dataset_type}_{split}.csv"
-            )
-            train_df = pd.read_csv(
-                f"datasets/{dataset_type}/train/{dataset_type}_train_fold0.csv"
-            )
-            scaler.fit(train_df[columns_to_scale])
-            df[columns_to_scale] = scaler.transform(df[columns_to_scale])
+            df = pd.read_csv(f"datasets/{dataset_type}/{split}/{dataset_type}_{split}.csv")
         else:
-            df = pd.read_csv(
-                f"datasets/{dataset_type}/{split}/{dataset_type}_{split}_fold{fold}.csv"
-            )
+            df = pd.read_csv(f"datasets/{dataset_type}/{split}/{dataset_type}_{split}_fold{fold}.csv")
 
-            df[columns_to_scale] = scaler.fit_transform(df[columns_to_scale])
-
-
+        # Transform the data using the scaler fit on all training data
+        df[columns_to_scale] = scaler.transform(df[columns_to_scale])
 
         return df, scaler
     except Exception as e:
-        logger.error(
-            f"Error loading data for {dataset_type}, {split}, fold {fold}: {str(e)}"
-        )
+        logger.error(f"Error loading data for {dataset_type}, {split}, fold {fold}: {str(e)}")
         raise
 
 
@@ -118,9 +119,8 @@ def denormalize_data(data, scaler):
     else:
         raise TypeError("Data must be either a numpy array or a torch Tensor")
 
-
 def predict_trajectory(
-    models: Union[torch.nn.Module, List[torch.nn.Module]],
+    model: torch.nn.Module,
     initial_sequence: torch.Tensor,
     scaler,
     steps: int,
@@ -139,13 +139,7 @@ def predict_trajectory(
                 else:  # PINN or other models
                     input = current_input.flatten().unsqueeze(0)
 
-                if isinstance(models, list):
-                    # Ensemble prediction
-                    model_outputs = [model(input) for model in models]
-                    output = torch.mean(torch.stack(model_outputs), dim=0)
-                else:
-                    # Single model prediction
-                    output = models(input)
+                output = model(input)
 
                 predictions.append(output.squeeze().cpu().numpy())
                 current_input = torch.cat(

@@ -20,295 +20,195 @@
 \maketitle
 
 \begin{abstract}
-This report presents a comprehensive study on solving the two-body and three-body problems using deep learning models, with a particular focus on Physics-Informed Neural Networks (PINNs). We address all aspects of the assignment, including data generation, model implementation, training, and evaluation. Our approach demonstrates the potential of machine learning techniques in solving complex gravitational problems and provides insights into the advantages and limitations of these methods compared to traditional analytical approaches.
-\end{abstract}
+  This study addresses the two-body and three-body gravitational problems using deep learning models, with a focus on Physics-Informed Neural Networks (PINNs). We cover data generation for various orbital scenarios, implement and compare different neural network architectures (MLP, LSTM, and PINN), and evaluate their performance in predicting orbital trajectories. Our approach demonstrates the potential of machine learning techniques in solving complex gravitational problems, particularly highlighting the advantages of physics-informed methods. The complete codebase for this project is available on GitHub at [your GitHub repository URL].
+  \end{abstract}
 
-\section{Introduction}
-\label{sec:introduction}
-The two-body and three-body problems are fundamental challenges in celestial mechanics, with significant implications for understanding orbital dynamics and predicting the motion of celestial bodies. This study aims to explore the application of deep learning models, particularly Physics-Informed Neural Networks (PINNs), to solve these problems. We address the following key questions posed in the assignment:
+  \section{Introduction}
+  \label{sec:introduction}
+  The two-body and three-body problems are fundamental challenges in celestial mechanics. This study explores the application of deep learning models to solve these problems, addressing the following key aspects of the assignment:
 
-\begin{itemize}
-    \item How can we simulate the two-body and three-body problems with varying initial conditions?
-    \item What deep learning architectures are suitable for modeling orbital dynamics?
-    \item How do Physics-Informed Neural Networks compare to traditional neural networks in solving these problems?
-    \item Can we improve the accuracy of orbital predictions using machine learning techniques?
-    \item How do the models perform with different levels of uncertainty and increased acceleration?
-\end{itemize}
-
-By answering these questions, we provide a comprehensive analysis of the potential of deep learning in solving complex gravitational problems.
+  \begin{itemize}
+      \item Simulation of two-body and three-body problems with varying initial conditions and increased acceleration scenarios.
+      \item Implementation and comparison of different neural network architectures: Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Networks (PINNs).
+      \item Evaluation of model performance in predicting orbital trajectories for different time horizons (10, 100, and 500 steps).
+      \item Analysis of the advantages of incorporating physical constraints in neural networks through PINNs.
+      \item Assessment of model robustness under different levels of measurement uncertainty.
+  \end{itemize}
 
 \section{Literature Review}
 \label{sec:literature}
 
-The application of machine learning techniques to gravitational n-body problems has gained significant attention in recent years. This section reviews key contributions in this field, focusing on the use of neural networks and physics-informed approaches.
+Neural networks have shown promise in orbital mechanics, with Liao et al. \cite{liao2020} successfully applying them to find and classify periodic orbits in the three-body problem. The introduction of Physics-Informed Neural Networks (PINNs) by Raissi et al. \cite{raissi2019} has further advanced the field, offering a framework to incorporate physical laws directly into neural network architectures. In the context of gravitational problems, Martin and Schaub \cite{martin2022} demonstrated PINNs' efficacy in modeling gravity fields of celestial bodies.
 
-\subsection{Traditional Approaches to N-body Problems}
+Deep learning approaches have also been applied to related challenges in astrodynamics. Cheng et al. \cite{cheng2020} utilized neural networks for real-time optimal control in asteroid landings, while Gao and Liao \cite{gao2019} proposed an efficient gravity field modeling method based on Gaussian process regression. These advancements highlight the potential of machine learning in addressing complex gravitational dynamics.
 
-Historically, the two-body problem has been solved analytically, while the three-body problem has remained a challenge since its formulation by Newton in 1687 \cite{newton1687}. Poincaré proved that no closed-form solution exists for the general three-body problem \cite{poincare1890}, leading to the development of various numerical methods.
-
-\subsection{Machine Learning in Orbital Mechanics}
-
-Recent advancements in machine learning have opened new avenues for solving complex dynamical systems. Liao et al. \cite{liao2020} demonstrated the use of artificial neural networks to find and classify periodic orbits in the three-body problem, significantly increasing the number of known periodic orbits.
-
-\subsection{Physics-Informed Neural Networks}
-
-Physics-Informed Neural Networks (PINNs), introduced by Raissi et al. \cite{raissi2019}, have shown promise in solving partial differential equations and modeling physical systems. In the context of gravitational problems, Martin and Schaub \cite{martin2022} applied PINNs to model the gravity fields of planets and small bodies, demonstrating improved efficiency over traditional methods like spherical harmonics.
-
-\subsection{Deep Learning for Gravity Field Modeling}
-
-The application of deep learning to gravity field modeling has been explored by several researchers. Cheng et al. \cite{cheng2020} used neural networks for real-time optimal control in irregular asteroid landings. Gao and Liao \cite{gao2019} proposed an efficient gravity field modeling method for small bodies based on Gaussian process regression.
-
-\subsection{Challenges and Future Directions}
-
-While machine learning approaches show promise, challenges remain in ensuring physical constraints are properly enforced, avoiding overfitting, and generalizing to new scenarios. The physics-informed approach helps address some of these issues, but there is still work to be done in optimizing network architectures, incorporating more physics knowledge, and expanding to more complex N-body scenarios \cite{meng2022physics}.
-
-This literature review provides context for our study, highlighting the potential of machine learning approaches in solving gravitational problems and identifying areas where our work can contribute to the field.
-
+However, challenges persist in ensuring physical constraints are properly enforced, avoiding overfitting, and generalizing to new scenarios. The physics-informed approach partially addresses these issues, but further research is needed to optimize network architectures, incorporate more comprehensive physical knowledge, and extend these methods to more complex N-body scenarios \cite{meng2022physics}. This literature review sets the stage for our study, which aims to contribute to this evolving field by exploring the application of neural networks and PINNs to two-body and three-body gravitational problems.
 \section{Methodology}
 \label{sec:methodology}
-
 \subsection{Data Generation}
-To simulate the two-body and three-body problems with varying initial conditions, we implemented a comprehensive data generation module. This module addresses the exercise requirements by simulating realistic orbital trajectories for different scenarios, incorporating uncertainty, and handling increased acceleration cases.
-\subsubsection{Simulation Scenarios}
-We implemented three main simulation scenarios:
-
-Standard Two-Body Problem: This scenario simulates the motion of a light rotating object (spaceship) around a very heavy stationary object.
-Two-Body Problem with Increased Acceleration: This scenario extends the standard two-body problem by introducing an additional sinusoidal force on the spaceship, simulating a propulsion system malfunction.
-Three-Body Problem: This scenario simulates the motion of a light object (spaceship) under the gravitational influence of two heavy bodies.
-
-\subsubsection{Physical Model}
-The simulation is based on Newton's law of gravitation:
-
-\[F = -G \frac{M m}{r^2} \hat{r}\]
-
+Our data generation process was designed to create diverse, realistic orbital scenarios for two-body and three-body gravitational problems, while incorporating measurement uncertainties to reflect real-world challenges. We implemented three main simulation scenarios: the standard two-body problem, a two-body problem with increased acceleration, and a three-body problem.
+For the two-body problem, we simulated the motion of a light rotating object (spaceship) around a very heavy stationary object. The initial radius was set to 10,000 m, with the initial velocity calculated to achieve a stable circular orbit. In the increased acceleration scenario, we introduced an additional sinusoidal force on the spaceship, simulating a propulsion system malfunction.
+The three-body problem involved simulating the motion of a light object (spaceship) under the gravitational influence of two heavy bodies. We generated varied initial conditions by randomizing the initial position and velocity of the spaceship within reasonable bounds.
+All simulations were based on Newton's law of gravitation:
+$$F = -G \frac{M m}{r^2} \hat{r}$$
 where $G$ is the gravitational constant, $M$ and $m$ are the masses of the objects, $r$ is the distance between them, and $\hat{r}$ is the unit vector in the direction of $r$.
-
-\subsubsection{Numerical Integration}
 We used the Euler method for numerical integration to update the position and velocity of the objects:
-
-\[v(t + \Delta t) = v(t) + a(t)\Delta t\]
+\[v(t + \Delta t) = v(t) + a(t) \Delta t\]
 \[r(t + \Delta t) = r(t) + v(t)\Delta t\]
+To reflect real-world measurement challenges, we introduced a 1\% relative uncertainty to the angle, radius, and velocity measurements of the orbiting object. These uncertainties were implemented using Gaussian noise, clipped to ensure the relative error remains within ±1\%.
+For each scenario, we simulated a total of 10 trajectories (spaceships) with different initial conditions, each for 100,000 time steps. We implemented rigorous checks to ensure the generated orbits are valid and realistic. For the two-body problem, we verified that the trajectory forms at least one complete orbit, spans a significant range in both x and y directions, and doesn't simply fly away. For the three-body problem, we additionally checked that the trajectory is bounded, shows sufficient complexity, and remains within a reasonable distance from the center of the system.
+The data was split into training, validation, and test sets. Nine spaceships were used for training and validation, with their trajectories divided into sequences and split using 5-fold cross-validation. One spaceship was reserved exclusively for the test set, providing a truly unseen trajectory for final model evaluation.
+To verify the quality of our generated data, we implemented visualization functions to plot the trajectories and velocities for each scenario. These visualizations helped ensure the simulated orbits were realistic and exhibited the expected behaviors for each problem type.
+This comprehensive data generation approach provides a robust foundation for training and evaluating machine learning models on orbital mechanics problems, addressing the key requirements of simulating realistic scenarios with varying complexity and uncertainty levels.
+\subsection{Model Architectures}
 
-where $v$ is velocity, $a$ is acceleration, $r$ is position, and $\Delta t$ is the time step.
-\subsubsection{Initial Conditions}
-For the two-body problem, we set the initial radius to 10,000 m. The initial velocity is calculated to achieve a stable circular orbit. For the three-body problem, we generate more varied initial conditions, randomizing the initial position and velocity of the spaceship within reasonable bounds.
+To address the challenge of predicting orbital dynamics, we implemented and compared three neural network architectures: Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Network (PINN). Each architecture was designed to capture different aspects of the two-body and three-body problems, including scenarios with increased acceleration.
 
-\subsubsection{Uncertainty Incorporation}
-To reflect real-world measurement challenges, we introduced uncertainty into our simulations:
+\begin{table}[h]
+\centering
+\small
+\caption{Overview of Model Architectures}
+\label{tab:model-architectures}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Feature} & \textbf{MLP} & \textbf{LSTM} & \textbf{PINN} \\
+\hline
+Input Size & 12 & 12 & 12 \\
+Hidden Layers & 3 & 2 & 4 \\
+Hidden Size & 256 & 128 & 256 \\
+Output Size & 4 & 4 & 4 \\
+Activation & LeakyReLU & ReLU & Tanh \\
+Dropout Rate & 0.2 & 0.2 & 0.1 \\
+Normalization & Batch Norm & Layer Norm & Batch Norm \\
+Residual Connections & Yes & Yes & Yes \\
+\hline
+\end{tabular}
+\end{table}
 
-Angular Uncertainty: We applied a 1\% relative uncertainty to the angle of the orbiting object's position.
-Radial Uncertainty: We applied a 1\% relative uncertainty to the radius (distance from the central body).
-Velocity Uncertainty: We applied a 1\% relative uncertainty to the velocity measurements.
+The MLP serves as our baseline model, capable of learning non-linear relationships between input features and output predictions. Its architecture includes three hidden layers with 256 neurons each, using LeakyReLU activation and batch normalization.
 
-These uncertainties were implemented using Gaussian noise, clipped to ensure the relative error remains within ±1%.
-\subsubsection{Increased Acceleration Scenario}
-For the two-body problem with increased acceleration, we implemented an additional force:
+The LSTM architecture, designed to capture temporal dependencies, utilizes a bidirectional LSTM layer with 128 hidden units and 2 layers. This is followed by two fully connected layers, each with 128 neurons and ReLU activation. Layer normalization is applied after the LSTM layer to stabilize training.
 
-\[F_{2x} = a \sin(v_x) \text{ and } F_{2y} = a \sin(v_y)\]
+The PINN architecture incorporates physical constraints into the learning process. It consists of four hidden layers with 256 neurons each, using Tanh activation and batch normalization. Crucially, it employs a custom loss function that combines mean squared error with physics-based constraints:
 
-where $a$ is the amplitude of the additional acceleration (set to $5 \times 10^{-9}$), and $v_x$ and $v_y$ are the components of the velocity vector.
-\subsubsection{Data Generation Process}
-Our data generation process was designed to create diverse, realistic orbital scenarios while ensuring the integrity of our model evaluation. The process includes the following steps:
+\begin{equation}
+L_{total} = L_{MSE} + \lambda(L_{energy} + L_{momentum})
+\end{equation}
+
+Where $L_{MSE}$ is the standard mean squared error, $L_{energy}$ ensures conservation of total energy (kinetic + potential), and $L_{momentum}$ enforces conservation of linear momentum. The hyperparameter $\lambda$ balances the influence of physical constraints.
+
+All models use residual connections and dropout to facilitate training of deeper networks and prevent overfitting. They were trained using the Adam optimizer with a learning rate of 0.001 and early stopping (patience of 5 epochs). We employed 5-fold cross-validation to ensure robust evaluation of each model's performance.
+
+The selection of these architectures was motivated by their unique strengths:
 
 \begin{enumerate}
-    \item For each scenario (two-body, two-body with increased acceleration, and three-body), we simulated a total of 10 trajectories (spaceships) with different initial conditions.
-    \item Each trajectory was simulated for 100,000 time steps, ensuring at least ten complete orbits for the two-body problem.
-    \item We implemented rigorous checks to ensure the generated orbits are valid. These checks were crucial for simulating realistic scenarios, as we observed that without these constraints, approximately 40\% of the simulated spaceships would either escape the system immediately or after a short period. For the two-body problem, we verified that:
-    \begin{itemize}
-        \item The trajectory forms at least one complete orbit.
-        \item The orbit spans a significant range in both x and y directions (at least 10\% of the maximum value in each direction).
-        \item The trajectory doesn't simply fly away in one direction.
-    \end{itemize}
-    For the three-body problem, we additionally checked that:
-    \begin{itemize}
-        \item The trajectory is bounded (maximum range less than $10^6$ units).
-        \item The orbit shows sufficient complexity (at least 30 significant direction changes).
-        \item The spaceship remains within a reasonable distance from the center of the system (maximum distance less than 200,000 units).
-    \end{itemize}
-    These checks ensured that our simulations closely mimicked real-world scenarios where objects maintain stable orbits or exhibit interesting, non-trivial dynamics in multi-body systems.
-    \item The data was split into training, validation, and test sets as follows:
-    \begin{itemize}
-        \item 9 spaceships were used for training and validation.
-        \item 1 spaceship was reserved exclusively for the test set.
-        \item The trajectories of the 9 training/validation spaceships were further divided into sequences, which were then split into training and validation sets using 5-fold cross-validation.
-    \end{itemize}
-    \item This splitting strategy means that while the training and validation sets share data from the same spaceships (but different parts of their trajectories), the test set contains a completely separate spaceship trajectory, unseen during training or validation.
-    \item We implemented a 5-fold cross-validation structure for the training and validation data, allowing for robust model evaluation while maintaining the shared spaceship approach between these sets.
+    \item MLP provides a simple yet effective baseline for comparison.
+    \item LSTM captures long-term dependencies in orbital trajectories.
+    \item PINN incorporates domain-specific knowledge, potentially leading to more physically plausible predictions.
 \end{enumerate}
 
-This careful data generation and splitting process ensures that our models are trained on diverse, realistic orbital scenarios from 9 spaceships, cross-validated robustly, and then evaluated on a truly unseen trajectory from a 10th spaceship. This approach provides a rigorous test of the models' predictive capabilities and their ability to generalize to entirely new scenarios, while also ensuring that the training data accurately represents stable and interesting orbital dynamics.
-\subsubsection{Visualization}
-To verify the quality of our generated data, we implemented visualization functions to plot the trajectories and velocities for each scenario. These visualizations helped ensure the simulated orbits were realistic and exhibited the expected behaviors for each problem type.
-This data generation approach provides a comprehensive foundation for training and evaluating machine learning models on orbital mechanics problems, addressing the key requirements of simulating realistic scenarios with varying complexity and uncertainty levels.
-\subsection{Model Architectures}
-To address the assignment's question about suitable deep learning architectures for orbital dynamics modeling, we implemented and compared several neural network architectures. Each architecture was designed to capture different aspects of the orbital dynamics problem.
-
-\subsubsection{Simple Regression Model}
-We implemented a feedforward neural network with the following architecture:
-\begin{itemize}
-    \item Input layer: 12 neurons (3 time steps, each with x, y, vx, vy)
-    \item Hidden layer 1: 256 neurons with ReLU activation
-    \item Hidden layer 2: 256 neurons with ReLU activation
-    \item Output layer: 4 neurons (predicting x, y, vx, vy for the next time step)
-    \item Dropout rate: 0.3 between hidden layers
-    \item Batch normalization: Applied after each hidden layer
-\end{itemize}
-
-\subsubsection{Long Short-Term Memory (LSTM) Network}
-The LSTM architecture was designed to capture temporal dependencies in the orbital trajectories:
-\begin{itemize}
-    \item Input shape: (3, 4) representing 3 time steps with 4 features each
-    \item LSTM layer: 256 hidden units
-    \item Fully connected layer 1: 256 neurons with ReLU activation
-    \item Output layer: 4 neurons
-    \item Dropout rate: 0.2 in the LSTM layer
-\end{itemize}
-
-\subsubsection{Physics-Informed Neural Network (PINN)}
-The PINN architecture incorporates physical constraints into the learning process:
-\begin{itemize}
-    \item Input layer: 12 neurons
-    \item Hidden layer 1: 256 neurons with Tanh activation
-    \item Hidden layer 2: 256 neurons with Tanh activation
-    \item Hidden layer 3: 256 neurons with Tanh activation
-    \item Output layer: 4 neurons
-\end{itemize}
-
+By comparing these diverse approaches, we aim to determine the most effective method for predicting orbital dynamics across various scenarios and time horizons, balancing between purely data-driven learning and physics-informed modeling.
 \subsubsection{Training Configuration}
-For all models, we used the following training configuration:
+We implemented a consistent training approach across all model architectures to ensure a fair comparison:
+
 \begin{itemize}
-    \item Optimizer: Adam with an initial learning rate of 0.001
+    \item Optimizer: Adam with a learning rate of 0.001
     \item Loss function:
-    \begin{itemize}
-        \item For Simple Regression and LSTM: Mean Squared Error (MSE)
-        \item For PINN: Custom loss function incorporating MSE and physical constraints (energy conservation, momentum conservation, and Laplace's equation)
-    \end{itemize}
+        \begin{itemize}
+            \item For MLP and LSTM: Mean Squared Error (MSE)
+            \item For PINN: Custom loss function (detailed below)
+        \end{itemize}
     \item Batch size: 32
-    \item Maximum epochs: 100
+    \item Maximum epochs: 20
     \item Early stopping: Patience of 5 epochs
-    \item Learning rate scheduler: ReduceLROnPlateau with a factor of 0.5 and patience of 2 epochs
+    \item Cross-validation: 5-fold
 \end{itemize}
 
-It's important to note that due to the early stopping mechanism with a patience of 5 epochs, most models did not utilize the full 100 epochs. Training was terminated as soon as the model stopped improving for 5 consecutive epochs, which often resulted in significantly fewer than 100 epochs being used. This approach helped to prevent overfitting and ensure that we captured the model's best performance without unnecessary computation.
+Training was conducted for each model type (MLP, LSTM, PINN) on three dataset types: two-body problem, two-body problem with increased acceleration, and three-body problem. We employed 5-fold cross-validation to ensure robust evaluation, with one fold reserved for validation in each training iteration.
 
-\subsubsection{Model Selection and Evaluation}
-We employed a rigorous model selection and evaluation process:
+The \texttt{generic\_train} function in our codebase handles the training loop, implementing early stopping and model checkpointing. Training progress and performance metrics were logged using Weights \& Biases (wandb) for comprehensive experiment tracking.
+
+\subsubsection{Physics-Informed Neural Networks}
+The PINN architecture incorporates physical laws into the learning process through a custom loss function:
+
+\begin{equation}
+L_{\text{total}} = L_{\text{MSE}} + 0.1 \cdot (L_{\text{energy}} + L_{\text{momentum}})
+\end{equation}
+
+Where:
 \begin{itemize}
-    \item 5-fold cross-validation for robust performance estimation
-    \item Early stopping to prevent overfitting
-    \item Evaluation metrics: Mean Squared Error (MSE) and Mean Absolute Error (MAE)
-    \item Prediction horizons: 10, 100, and 500 steps into the future
+    \item $L_{\text{MSE}}$ is the standard mean squared error between predicted and true values.
+    \item $L_{\text{energy}}$ enforces energy conservation:
+    \begin{equation}
+    L_{\text{energy}} = \frac{1}{N} \sum_{i=1}^N (E_{\text{pred},i} - E_{\text{true},i})^2
+    \end{equation}
+    with $E = \frac{1}{2}v^2 - \frac{GM_1}{r}$, where $v$ is velocity, $G$ is the gravitational constant, $M_1$ is the mass of the central body, and $r$ is the distance from the central body.
+
+    \item $L_{\text{momentum}}$ ensures momentum conservation:
+    \begin{equation}
+    L_{\text{momentum}} = \frac{1}{N} \sum_{i=1}^N (p_{\text{pred},i} - p_{\text{true},i})^2
+    \end{equation}
+    where $p = mv$ is the momentum.
 \end{itemize}
 
-These diverse architectures were chosen to explore different approaches to modeling orbital dynamics. The simple regression model serves as a baseline, the LSTM network captures temporal dependencies, and the PINN incorporates physical laws into the learning process. By comparing these models, we aim to identify the most suitable architecture for accurate and physically consistent orbital predictions.
-\subsection{Physics-Informed Neural Networks}
-The Physics-Informed Neural Network (PINN) architecture incorporates physical constraints into the loss function, ensuring that the model learns solutions consistent with the underlying physical laws. This approach addresses the assignment's focus on PINNs and their potential advantages in solving gravitational problems.
+This loss function is implemented in the \texttt{pinn\_loss} function, utilizing PyTorch's automatic differentiation capabilities. The physics-based terms are weighted by a factor of 0.1 to balance their influence with the data-driven MSE loss.
 
-\subsubsection{PINN Loss Function}
-The PINN loss function combines a traditional Mean Squared Error (MSE) term with physics-inspired loss terms:
+By incorporating these physics-based constraints, the PINN architecture aims to learn solutions that not only fit the data but also respect the underlying physical principles of orbital mechanics. This approach directly addresses the assignment's focus on PINNs and their potential advantages in solving gravitational problems, particularly for complex scenarios like the three-body problem and cases with increased acceleration.
 
-\[ L_{\text{total}} = L_{\text{MSE}} + \lambda (L_{\text{energy}} + L_{\text{momentum}} + L_{\text{continuity}}) \]
+Our implementation allows for a comprehensive comparison between purely data-driven approaches (MLP and LSTM) and the physics-informed method (PINN) across different orbital dynamics scenarios, providing insights into their relative strengths and limitations.
 
-where $\lambda = 0.1$ is a weighting factor for the physics-inspired losses.
+\subsection{Inference and Evaluation}
 
-\subsubsection{Mean Squared Error Loss}
-The MSE loss measures the discrepancy between predicted and true values:
+Our evaluation process encompasses a comprehensive assessment of model performance across all folds and datasets. We employ 5-fold cross-validation, with models trained on each fold evaluated on their respective validation sets and the unseen test set. Performance metrics are calculated using mean squared error (MSE) for both position and velocity predictions, with results aggregated across all folds to provide robust estimates. We evaluate models on three distinct sets: training spaceships (to assess fitting), validation spaceships (for generalization within known scenarios), and test spaceships (for performance on entirely unseen trajectories). For each set, we compute the mean and standard deviation of MSE for both position and velocity predictions, considering prediction horizons of 10, 100, and 500 steps. This approach allows us to assess model performance across different time scales and problem complexities. Importantly, all predictions are made using normalized data and subsequently denormalized for evaluation, ensuring consistent scaling across different orbital scenarios.
 
-\[ L_{\text{MSE}} = \frac{1}{N} \sum_{i=1}^N (y_{\text{pred},i} - y_{\text{true},i})^2 \]
-
-where $N$ is the number of samples, $y_{\text{pred}}$ are the model predictions, and $y_{\text{true}}$ are the true values.
-
-\subsubsection{Energy Conservation Loss}
-The energy conservation loss is a simplified version that encourages the conservation of kinetic energy:
-
-\[ L_{\text{energy}} = \frac{1}{N} \sum_{i=1}^N (v_{x,i}^2 + v_{y,i}^2) \]
-
-where $v_x$ and $v_y$ are the predicted velocity components.
-
-\subsubsection{Momentum Conservation Loss}
-The momentum conservation loss penalizes discrepancies in velocities:
-
-\[ L_{\text{momentum}} = \frac{1}{N} \sum_{i=1}^N |v_{\text{pred},i} - v_{\text{true},i}| \]
-
-where $v_{\text{pred}}$ and $v_{\text{true}}$ are the predicted and true velocity vectors, respectively.
-
-\subsubsection{Continuity Loss}
-The continuity loss encourages smooth trajectories by penalizing large position changes:
-
-\[ L_{\text{continuity}} = \frac{1}{N} \sum_{i=1}^N |r_{\text{pred},i} - r_{\text{true},i}| \]
-
-where $r_{\text{pred}}$ and $r_{\text{true}}$ are the predicted and true position vectors, respectively.
-
-\subsubsection{Additional Physics-Inspired Losses}
-While not directly used in the final loss function, we also implemented more complex physics-inspired losses that could be incorporated for further refinement:
-
-\paragraph{Detailed Energy Conservation}
-This loss term considers both kinetic and potential energy:
-
-\[ L_{\text{energy}} = \frac{1}{N} \sum_{i=1}^N \left(\left(KE_{\text{pred},i} + PE_{\text{pred},i}\right) - \left(KE_{\text{true},i} + PE_{\text{true},i}\right)\right)^2 \]
-
-where $KE = \frac{1}{2}(v_x^2 + v_y^2)$ is the kinetic energy and $PE = -\frac{GM_1}{r}$ is the potential energy, with $G$ being the gravitational constant, $M_1$ the mass of the central body, and $r$ the distance from the central body.
-
-\paragraph{Laplacian Loss}
-This loss encourages solutions that satisfy Laplace's equation:
-
-\[ L_{\text{laplacian}} = \frac{1}{N} \sum_{i=1}^N \left(\nabla^2 y_i\right)^2 \]
-
-where $\nabla^2 y$ is the Laplacian of the model output, computed using automatic differentiation.
-
-\subsubsection{Implementation Details}
-The PINN loss function is implemented using PyTorch's autograd functionality, allowing for efficient computation of gradients through the neural network. The use of \texttt{create\_graph=True} in the gradient computations enables higher-order derivatives, which are crucial for implementing the Laplacian loss.
-
-By incorporating these physics-inspired loss terms, the PINN architecture aims to learn solutions that not only fit the data but also respect the underlying physical principles of orbital mechanics. This approach has the potential to improve the model's generalization capabilities and produce physically consistent predictions, even in scenarios not seen during training.
 \section{Results and Discussion}
 \label{sec:results}
 
 \subsection{Data Generation and Simulation}
 
-\begin{figure}[H]
+\begin{figure}[H!]
     \centering
     \begin{tabular}{cc}
         \begin{subfigure}[b]{0.45\textwidth}
             \centering
-            \includegraphics[width=\textwidth]{images/two_body_trajectory.png}
-            \caption{Trajectory of the spaceship in the two-body problem}
+            \includegraphics[width=\textwidth]{images/two_body_all_trajectories.png}
+            \caption{Trajectories of all 10 spaceships in the two-body problem}
             \label{fig:two_body_trajectory}
         \end{subfigure} &
         \begin{subfigure}[b]{0.45\textwidth}
             \centering
-            \includegraphics[width=\textwidth]{images/two_body_velocity.png}
-            \caption{Absolute velocity of the spaceship over time in the two-body problem}
+            \includegraphics[width=\textwidth]{images/two_body_all_velocities.png}
+            \caption{Absolute velocity of all the 10 spaceships over time in the two-body problem}
             \label{fig:two_body_velocity}
         \end{subfigure} \\
         \begin{subfigure}[b]{0.45\textwidth}
             \centering
-            \includegraphics[width=\textwidth]{images/two_body_force_increased_acceleration_trajectory.png}
-            \caption{Trajectory of the spaceship in the two-body problem with increased acceleration}
+            \includegraphics[width=\textwidth]{images/two_body_acc_trajectories.png}
+            \caption{Trajectories of all 10 spaceships in the two-body problem with increased acceleration}
             \label{fig:two_body_acceleration_trajectory}
         \end{subfigure} &
         \begin{subfigure}[b]{0.45\textwidth}
             \centering
-            \includegraphics[width=\textwidth]{images/two_body_force_increased_acceleration_velocity.png}
-            \caption{Absolute velocity of the spaceship over time in the two-body problem with increased acceleration}
+            \includegraphics[width=\textwidth]{images/two_body_acc_all_velocities.png}
+            \caption{Absolute velocity of all the 10 spaceships over time in the two-body problem with increased acceleration}
             \label{fig:two_body_acceleration_velocity}
         \end{subfigure} \\
         \begin{subfigure}[b]{0.45\textwidth}
             \centering
-            \includegraphics[width=\textwidth]{images/three_body_trajectory.png}
-            \caption{Trajectory of the spaceship in the three-body problem}
+            \includegraphics[width=\textwidth]{images/three_body_all_trajectories.png}
+            \caption{Trajectories of all 10 spaceships in the three-body problem}
             \label{fig:three_body_trajectory}
         \end{subfigure} &
         \begin{subfigure}[b]{0.45\textwidth}
             \centering
-            \includegraphics[width=\textwidth]{images/three_body_velocity.png}
-            \caption{Absolute velocity of the spaceship over time in the three-body problem}
+            \includegraphics[width=\textwidth]{images/three_body_all_velocities.png}
+            \caption{Absolute velocity of all the 10 spaceships over time in the three-body problem}
             \label{fig:three_body_velocity}
         \end{subfigure}
     \end{tabular}
-    \caption{Trajectories and velocities of the spaceship in different problem scenarios}
+    \caption{Trajectories and velocities of spaceships in different orbital scenarios}
     \label{fig:data_generation_simulation}
 \end{figure}
-
 \subsection{Model Performance Comparison}
 
 \subsubsection{Prediction Accuracy}
@@ -755,7 +655,7 @@ Our results show that PINNs offer advantages in terms of prediction accuracy, ro
 
 Future work could explore more advanced PINN architectures, incorporate higher-order numerical integration schemes, and investigate the application of these models to real-world orbital prediction scenarios.
 
-
+- Future work: experiment with predicting veloctiy and trajectory differnet models
 \bibliographystyle{plain}
 \bibliography{references}
 \section{Appendices}
