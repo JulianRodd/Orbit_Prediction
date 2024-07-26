@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{multirow}
 \usepackage{amsmath}
+\usepackage{bookmark}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{algorithm}
@@ -12,15 +13,15 @@
 \usepackage{subcaption}
 \usepackage{caption}
 \title{Solving the Two and Three Body Problems with Deep Learning Models}
-\author{Your Name}
-\date{}
+\author{Julian Roddeman (s1080491)}
+\date{\today}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-  This study addresses the two-body and three-body gravitational problems using deep learning models, with a focus on Physics-Informed Neural Networks (PINNs). We cover data generation for various orbital scenarios, implement and compare different neural network architectures (MLP, LSTM, and PINN), and evaluate their performance in predicting orbital trajectories. Our approach demonstrates the potential of machine learning techniques in solving complex gravitational problems, particularly highlighting the advantages of physics-informed methods. The complete codebase for this project is available on GitHub at [your GitHub repository URL].
+  This study addresses the two-body and three-body gravitational problems using deep learning models, with a focus on Physics-Informed Neural Networks (PINNs). We cover data generation for various orbital scenarios, implement and compare different neural network architectures (MLP, LSTM, and PINN), and evaluate their performance in predicting orbital trajectories. Our approach demonstrates the potential of machine learning techniques in solving complex gravitational problems, particularly highlighting the advantages of physics-informed methods. The complete codebase for this project is available on GitHub at \url{https://github.com/JulianRodd/Orbit_Prediction}.
   \end{abstract}
 
   \section{Introduction}
@@ -164,9 +165,11 @@ Our evaluation process encompasses a comprehensive assessment of model performan
 \section{Results and Discussion}
 \label{sec:results}
 
-\subsection{Data Generation and Simulation}
+\subsection{Data Generation and Simulation Results}
 
-\begin{figure}[H!]
+Our data generation process simulated orbital dynamics for three distinct scenarios: the two-body problem, the two-body problem with increased acceleration, and the three-body problem. For each scenario, we simulated trajectories for 10 spaceships, providing a diverse dataset for our subsequent machine learning models. Figure \ref{fig:data_generation_simulation} presents a comprehensive overview of the trajectories and velocities for all spaceships across these scenarios.
+
+\begin{figure}[H]
     \centering
     \begin{tabular}{cc}
         \begin{subfigure}[b]{0.45\textwidth}
@@ -209,258 +212,34 @@ Our evaluation process encompasses a comprehensive assessment of model performan
     \caption{Trajectories and velocities of spaceships in different orbital scenarios}
     \label{fig:data_generation_simulation}
 \end{figure}
+
+\subsubsection{Two-Body Problem}
+In the standard two-body problem (Figures \ref{fig:two_body_trajectory} and \ref{fig:two_body_velocity}), we observe predominantly circular orbits. There is a little amount of variation between trajectories, which aligns with our expectations given the introduced measurement uncertainties but without the additional force and acceleration. The velocity profiles show consistent periodic patterns, reflecting the stable nature of these orbits.
+
+\subsubsection{Two-Body Problem with Increased Acceleration}
+The introduction of increased acceleration (Figures \ref{fig:two_body_acceleration_trajectory} and \ref{fig:two_body_acceleration_velocity}) maintains the circular nature of the orbits but with some key differences. The trajectories show slightly more variation between spaceships compared to the standard two-body problem, suggesting a less constrained system. This is in line with the expections that the additional acceleration and force introduce this extra variability. Notably, the velocity profiles exhibit higher overall amplitudes while maintaining similar wavelengths to the standard case. This indicates that the additional force increases the speed of the spaceships without significantly altering their orbital periods.
+
+\subsubsection{Three-Body Problem}
+The three-body problem (Figures \ref{fig:three_body_trajectory} and \ref{fig:three_body_velocity}) introduces significant complexity and chaos into the orbital dynamics. The trajectories show extreme variability, with some spaceships maintaining bounded orbits while others are ejected from the system entirely. This chaotic behavior is mirrored in the velocity profiles, which display a wide range of amplitudes and frequencies.
+
+The velocity patterns in the three-body problem are particularly noteworthy. We observe a mix of very high and very low amplitude oscillations, often with extremely short wavelengths. These extreme variations likely correspond to close encounters with the heavy bodies, resulting in rapid accelerations and decelerations. The highest velocity peaks probably occur when a spaceship passes close to one of the heavy bodies, gaining substantial kinetic energy before being propelled back into space or into a rapid orbit around the heavy object.
+
+This rich variety of behaviors in the three-body problem underscores the challenge it presents for predictive modeling. The sensitive dependence on initial conditions and the complex interplay of gravitational forces create a dataset that will rigorously test the capabilities of our machine learning models, particularly in terms of their ability to generalize and make accurate long-term predictions.
+
+\subsection{Two-Body Problem}
+% - Results for circular orbit predictions
+% - Impact of measurement uncertainty on predictions
+
+\subsection{Two-Body Problem with Increased Acceleration}
+% - Results for predictions with sinusoidal force applied
+% - Effect of increasing acceleration on model performance
+
+\subsection{Three-Body Problem}
+% - Results for the more complex three-body system
+% - Impact of slight changes in initial conditions on predictions
+
+
 \subsection{Model Performance Comparison}
-
-\subsubsection{Prediction Accuracy}
-% \begin{table}[htbp]
-%   \centering
-%   \small
-%   \begin{tabular}{llccccccc}
-%   \hline
-%   Problem & Model & \multicolumn{5}{c}{Fold MSE} & Mean MSE & Std Dev \\
-%   \cline{3-7}
-%   & & 1 & 2 & 3 & 4 & 5 & & \\
-%   \hline
-%   \multirow{9}{*}{Two-Body}
-%   & \multirow{3}{*}{Simple Regression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cline{2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cline{2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \hline
-%   \multirow{9}{*}{Two-Body with Acceleration}
-%   & \multirow{3}{*}{Simple Regression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cline{2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cline{2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \hline
-%   \multirow{9}{*}{Three-Body}
-%   & \multirow{3}{*}{Simple Regression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cline{2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cline{2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \hline
-%   \end{tabular}
-%   \caption{Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
-%   \label{tab:model_mse_detailed}
-% \end{table}
-
-
-% \begin{table}[htbp]
-%   \centering
-%   \small
-%   \begin{tabular}{@{}llccccccc@{}}
-%   \toprule
-%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multicolumn{5}{c}{Fold Position MSE} & \multirow{2}{*}{Mean} & \multirow{2}{*}{Std Dev} \\
-%   \cmidrule(lr){3-7}
-%   & & 1 & 2 & 3 & 4 & 5 & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \bottomrule
-%   \end{tabular}
-%   \caption{Position Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
-%   \label{tab:model_position_mse}
-% \end{table}
-% \begin{table}[htbp]
-%   \centering
-%   \small
-%   \begin{tabular}{@{}llccccccc@{}}
-%   \toprule
-%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multicolumn{5}{c}{Fold Velocity MSE} & \multirow{2}{*}{Mean} & \multirow{2}{*}{Std Dev} \\
-%   \cmidrule(lr){3-7}
-%   & & 1 & 2 & 3 & 4 & 5 & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \bottomrule
-%   \end{tabular}
-%   \caption{Velocity Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
-%   \label{tab:model_velocity_mse}
-% \end{table}
-
-
-% \begin{table}[htbp]
-%   \centering
-%   \small
-%   \begin{tabular}{@{}llccccccc@{}}
-%   \toprule
-%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multicolumn{5}{c}{Fold Combined MSE} & \multirow{2}{*}{Mean} & \multirow{2}{*}{Std Dev} \\
-%   \cmidrule(lr){3-7}
-%   & & 1 & 2 & 3 & 4 & 5 & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%       & & & & & & & \\
-%       & & & & & & & & \\
-%       & & & & & & & & \\
-%   \bottomrule
-%   \end{tabular}
-%   \caption{Combined Mean Squared Error (MSE) for different models across problem types, showing individual fold values, mean, and standard deviation}
-%   \label{tab:model_combined_mse}
-% \end{table}
-
 \begin{table}[htbp]
   \centering
   \scriptsize
@@ -525,130 +304,23 @@ Our evaluation process encompasses a comprehensive assessment of model performan
   \label{tab:model_comprehensive_mse_compact}
 \end{table}
 
-
-% \begin{table}[htbp]
-%   \centering
-%   \tiny
-%   \setlength{\tabcolsep}{2pt}
-%   \begin{tabular}{@{}llccccccccc@{}}
-%   \toprule
-%   \multirow{2}{*}{Problem} & \multirow{2}{*}{Model} & \multirow{2}{*}{Set} & \multicolumn{2}{c}{10 Steps} & \multicolumn{2}{c}{100 Steps} & \multicolumn{2}{c}{500 Steps} \\
-%   \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
-%   & & & Mean & Std & Mean & Std & Mean & Std \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Two-Body with Acceleration}}
-%   & \multirow{3}{*}{SimpleRegression}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \midrule
-%   \multirow{9}{*}{\rotatebox[origin=c]{90}{Three-Body}}
-%   & \multirow{3}{*}{SimpleRegression}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{LSTM}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \cmidrule(lr){2-9}
-%   & \multirow{3}{*}{PINN}
-%   & Train & & & & & & \\
-%   & & Val & & & & & & \\
-%   & & Test & & & & & & \\
-%   \bottomrule
-%   \end{tabular}
-%   \caption{Comprehensive Mean Squared Error (MSE) for different models across problem types, showing mean and standard deviation for 10, 100, and 500 prediction steps on train, validation, and test sets}
-%   \label{tab:model_comprehensive_mse_wide}
-% \end{table}
-
-
-\subsubsection{Long-term Prediction}
-% \begin{figure}[h]
-%     \centering
-%     \begin{subfigure}[b]{0.3\textwidth}
-%         \includegraphics[width=\textwidth]{images/long_term_prediction_10.png}
-%         \caption{10 steps}
-%     \end{subfigure}
-%     \begin{subfigure}[b]{0.3\textwidth}
-%         \includegraphics[width=\textwidth]{images/long_term_prediction_100.png}
-%         \caption{100 steps}
-%     \end{subfigure}
-%     \begin{subfigure}[b]{0.3\textwidth}
-%         \includegraphics[width=\textwidth]{images/long_term_prediction_500.png}
-%         \caption{500 steps}
-%     \end{subfigure}
-%     \caption{Long-term prediction accuracy for different time horizons}
-%     \label{fig:long_term_prediction}
-% \end{figure}
-
-\subsection{Autoregressive Approach Performance}
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.8\textwidth]{images/autoregressive_performance.png}
-%     \caption{Performance comparison of autoregressive models with varying input sequence lengths}
-%     \label{fig:autoregressive_performance}
-% \end{figure}
-
-\subsection{PINN Performance and Physical Consistency}
-
-\begin{table}[h]
-  \centering
-  \begin{tabular}{lcccc}
-      \hline
-      Metric & Two-Body & Two-Body with Acceleration & Three-Body \\
-      \hline
-      MSE (Train) & 0.06501 & 0.06390 & 0.06620 \\
-      MSE (Validation) & 0.12870 & 0.13145 & 0.13016 \\
-      Laplace Loss (Train) & 0.004352 & 0.004382 & 0.000653 \\
-      Laplace Loss (Validation) & 0.034064 & 0.031080 & 0.048927 \\
-      Energy Conservation Error (Train) & 0.482130 & 0.475219 & 0.475332 \\
-      Energy Conservation Error (Validation) & 0.480371 & 0.466133 & 0.391311 \\
-      Momentum Conservation Error (Train) & 0.087750 & 0.086272 & 0.090016 \\
-      Momentum Conservation Error (Validation) & 0.090204 & 0.093825 & 0.086836 \\
-      \hline
-  \end{tabular}
-  \caption{PINN performance and physical consistency metrics averaged over 5 folds}
-  \label{tab:pinn_performance}
-\end{table}
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.8\textwidth]{images/pinn_physical_consistency.png}
-%     \caption{Visualization of PINN's physical consistency in predictions}
-%     \label{fig:pinn_physical_consistency}
-% \end{figure}
+\section{Discussion}
+% - Analyze the strengths and weaknesses of each model type (MLP, LSTM, PINN) for orbital prediction tasks
+% - Discuss the impact of incorporating physical constraints in PINNs on prediction accuracy
+% - Examine the performance differences between short-term (10 steps) and long-term (500 steps) predictions
+% - Analyze how well the models handle increased complexity (from two-body to three-body problems)
+% - Discuss the effects of measurement uncertainty and increased acceleration on model performance
+% - Compare the autoregressive approach (LSTM) with the simple regression approach (MLP)
+% - Evaluate the effectiveness of using 3 previous time steps as input for predictions
 
 \section{Conclusion}
 \label{sec:conclusion}
+% - Summarize the key findings of the study
+% - Highlight the most effective model architecture for orbital predictions based on your results
+% - Discuss the potential of PINNs for improving predictions in gravitational problems
+% - Address the limitations of the current approach and potential areas for future research
+% - Reflect on the broader implications of using machine learning for solving complex physical problems
+
 This study demonstrates the potential of deep learning models, particularly Physics-Informed Neural Networks, in solving the two-body and three-body problems. We have addressed all questions posed in the assignment, providing insights into data generation, model implementation, performance comparison, and the impact of uncertainty and increased acceleration.
 
 Our results show that PINNs offer advantages in terms of prediction accuracy, robustness to uncertainty, and long-term stability compared to traditional neural networks. However, challenges remain, particularly in modeling the complex dynamics of the three-body problem and making very long-term predictions.
@@ -658,40 +330,72 @@ Future work could explore more advanced PINN architectures, incorporate higher-o
 - Future work: experiment with predicting veloctiy and trajectory differnet models
 \bibliographystyle{plain}
 \bibliography{references}
-\section{Appendices}
 
 \appendix
+\section{Two-Body Problem Trajectory Predictions}
+\begin{figure}[H]
+  \centering
+  \caption{Two-Body Problem: Model Predictions vs. Actual Trajectories}
+  \label{fig:two_body_predictions}
+  \begin{tabular}{cccc}
+      & Train & Validation & Test \\
+      MLP &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/MLP/two_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/MLP/two_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/MLP/two_body/500/full_trajectory_spaceship_0.png} \\
+      LSTM &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/LSTM/two_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/LSTM/two_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/LSTM/two_body/500/full_trajectory_spaceship_0.png} \\
+      PINN &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/PINN/two_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/PINN/two_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/PINN/two_body/500/full_trajectory_spaceship_0.png}
+  \end{tabular}
+\end{figure}
 
-\section{Detailed Model Architectures}
-\label{appendix:model_architectures}
+\section{Two-Body Problem with Increased Acceleration Trajectory Predictions}
+\begin{figure}[H]
+  \centering
+  \caption{Two-Body Problem with Increased Acceleration: Model Predictions vs. Actual Trajectories}
+  \label{fig:two_body_acc_predictions}
+  \begin{tabular}{cccc}
+      & Train & Validation & Test \\
+      MLP &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/MLP/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/MLP/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/MLP/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} \\
+      LSTM &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/LSTM/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/LSTM/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/LSTM/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} \\
+      PINN &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/PINN/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/PINN/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/PINN/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png}
+  \end{tabular}
+\end{figure}
 
-[Include detailed descriptions and diagrams of model architectures here]
 
-\section{Hyperparameter Tuning Results}
-\label{appendix:hyperparameter_tuning}
-
-[Include tables or graphs showing the results of hyperparameter tuning experiments]
-
-\section{Additional Visualizations}
-\label{appendix:additional_visualizations}
-
-[Include any additional plots or visualizations that provide insight into the model's performance or the problem's characteristics]
-
-\section{Code Snippets}
-\label{appendix:code_snippets}
-
-[Include key code snippets that illustrate important aspects of the implementation]
-\section{Code Implementation}
-\label{sec:appendix}
-The complete code implementation for this study is available in the following Python files:
-
-\begin{itemize}
-    \item \texttt{generics.py}: Contains constants and configuration parameters
-    \item \texttt{simulation.py}: Implements the orbital simulation and data generation
-    \item \texttt{regression.py}: Contains the neural network models and training pipeline
-    \item \texttt{utils.py}: Provides utility functions for data processing and visualization
-\end{itemize}
-
-These files collectively address all aspects of the assignment, from data generation to model implementation and evaluation.
-
+\section{Three-Body Problem Trajectory Predictions}
+\begin{figure}[H]
+  \centering
+  \caption{Three-Body Problem: Model Predictions vs. Actual Trajectories}
+  \label{fig:three_body_predictions}
+  \begin{tabular}{cccc}
+      & Train & Validation & Test \\
+      MLP &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/MLP/three_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/MLP/three_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/MLP/three_body/500/full_trajectory_spaceship_0.png} \\
+      LSTM &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/LSTM/three_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/LSTM/three_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/LSTM/three_body/500/full_trajectory_spaceship_0.png} \\
+      PINN &
+      \includegraphics[width=0.27\textwidth]{../inference_results/train/PINN/three_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/val/PINN/three_body/500/full_trajectory_spaceship_0.png} &
+      \includegraphics[width=0.27\textwidth]{../inference_results/test/PINN/three_body/500/full_trajectory_spaceship_0.png}
+  \end{tabular}
+\end{figure}
 \end{document}

@@ -64,10 +64,10 @@ def train_pinn(
 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
-                    os.makedirs(f"checkpoints/pinn/{dataset_type}/", exist_ok=True)
+                    os.makedirs(f"checkpoints/PINN/{dataset_type}/", exist_ok=True)
                     torch.save(
                         model.state_dict(),
-                        f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth",
+                        f"checkpoints/PINN/{dataset_type}/PINN_fold{fold}.pth",
                     )
                     early_stopping_counter = 0
                     logger.info(f"New best model saved for PINN (Fold {fold})")
@@ -87,7 +87,7 @@ def train_pinn(
 
         # Make predictions
         try:
-            model.load_state_dict(torch.load(f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth"))
+            model.load_state_dict(torch.load(f"checkpoints/PINN/{dataset_type}/PINN_fold{fold}.pth"))
             initial_sequence = next(iter(val_loader))[0][0].to(DEVICE)
             for steps in prediction_steps:
                 predictions = predict_future(model, initial_sequence, scaler, steps)
