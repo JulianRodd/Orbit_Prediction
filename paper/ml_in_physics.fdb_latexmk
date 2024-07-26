@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex ml_in_physics"] 1722006290 "ml_in_physics.aux" "ml_in_physics.bbl" "ml_in_physics" 1722006401 0
+["bibtex ml_in_physics"] 1722006529 "ml_in_physics.aux" "ml_in_physics.bbl" "ml_in_physics" 1722006549 0
   "./references.bib" 1721732835 2285 53a8950886c97695eb39ea22f4c83094 ""
   "/usr/local/texlive/2023/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "ml_in_physics.aux" 1722006400 16157 57f865c34625230cf764e23af8b3a033 "pdflatex"
+  "ml_in_physics.aux" 1722006549 16157 ba725e4ced882b5aa86fecca53f10a4f "pdflatex"
   (generated)
   "ml_in_physics.bbl"
   "ml_in_physics.blg"
   (rewritten before read)
-["pdflatex"] 1722006381 "/Users/julianroddeman/Documents/Repositories/Master/MLinPhysics2/paper/ml_in_physics.tex" "ml_in_physics.pdf" "ml_in_physics" 1722006401 0
+["pdflatex"] 1722006530 "/Users/julianroddeman/Documents/Repositories/Master/MLinPhysics2/paper/ml_in_physics.tex" "ml_in_physics.pdf" "ml_in_physics" 1722006549 0
   "../inference_results/test/LSTM/three_body/500/full_trajectory_spaceship_0.png" 1722004660 231881 a8984c58d90136d6149ce9d3b24ea2c6 ""
   "../inference_results/test/LSTM/two_body/500/full_trajectory_spaceship_0.png" 1722004468 340483 290e5f9536e3cbf8870d476f062b6a3b ""
   "../inference_results/test/LSTM/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png" 1722004570 331656 52ae8f3e8836411a3b7cde904fe2b60a ""
@@ -35,7 +35,7 @@
   "../inference_results/val/PINN/three_body/500/full_trajectory_spaceship_0.png" 1722004872 243947 9dda30310adf895d118012c2bce48899 ""
   "../inference_results/val/PINN/two_body/500/full_trajectory_spaceship_0.png" 1722004713 288784 65b7fa17c44bb635ae2e8282de859575 ""
   "../inference_results/val/PINN/two_body_force_increased_acceleration/500/full_trajectory_spaceship_0.png" 1722004794 302020 612c4691eaf5c23cbf3ef15d8372897c ""
-  "/Users/julianroddeman/Documents/Repositories/Master/MLinPhysics2/paper/ml_in_physics.tex" 1722006371 35034 df4f75e815c1bd5135778f6d5ae0322b ""
+  "/Users/julianroddeman/Documents/Repositories/Master/MLinPhysics2/paper/ml_in_physics.tex" 1722006499 40145 57ee9e0464cb527c2c53f7cefaa9060a ""
   "/usr/local/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm" 1136768653 1536 02c06700a42be0f5a28664c7273f82e7 ""
@@ -146,9 +146,9 @@
   "images/two_body_acc_trajectories.png" 1721990589 870090 77c4d13194538a9e0dc2f0cb1066d28d ""
   "images/two_body_all_trajectories.png" 1721990549 1055314 35df18d44111eb494ff193296c2e3f59 ""
   "images/two_body_all_velocities.png" 1721990551 588887 4b72009824b4c8b9fa28276b2e2113cc ""
-  "ml_in_physics.aux" 1722006400 16157 57f865c34625230cf764e23af8b3a033 "pdflatex"
-  "ml_in_physics.bbl" 1722006290 1448 1de0b7a772f4a4ced4128aeb515a70b6 "bibtex ml_in_physics"
-  "ml_in_physics.tex" 1722006371 35034 df4f75e815c1bd5135778f6d5ae0322b ""
+  "ml_in_physics.aux" 1722006549 16157 ba725e4ced882b5aa86fecca53f10a4f "pdflatex"
+  "ml_in_physics.bbl" 1722006530 1448 1de0b7a772f4a4ced4128aeb515a70b6 "bibtex ml_in_physics"
+  "ml_in_physics.tex" 1722006499 40145 57ee9e0464cb527c2c53f7cefaa9060a ""
   (generated)
   "ml_in_physics.aux"
   "ml_in_physics.log"
