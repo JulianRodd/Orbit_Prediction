@@ -6,3 +6,5 @@ wandb/*
 datasets.zip
 datasets.zip
 plots.zip
+!/inference_results/**
+
