@@ -8,7 +8,7 @@ from training.constants import DATASET_TYPES, MODEL_TYPES
 from training.train_models import train_models
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 

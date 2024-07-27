@@ -24,3 +24,4 @@ MINI_CHECKPOINT_BASE_PATH = "mini_checkpoints"
 # Heavy body positions (for plotting)
 HEAVY_BODY1_POSITION = (10000, 0)
 HEAVY_BODY2_POSITION = (-10000, 0)
+PREDICTION_START = 4000
