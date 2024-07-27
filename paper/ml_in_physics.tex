@@ -25,13 +25,13 @@
 \begin{@twocolumnfalse}
   \maketitle
   \begin{abstract}
-    This study addresses the two-body and three-body gravitational problems using deep learning models, with a focus on Physics-Informed Neural Networks (PINNs). We cover data generation for various orbital scenarios, implement and compare different neural network architectures (MLP, LSTM, and PINN), and evaluate their performance in predicting orbital trajectories. Our approach demonstrates the potential of machine learning techniques in solving complex gravitational problems, particularly highlighting the advantages of physics-informed methods. The complete codebase for this project is available on GitHub at \url{https://github.com/JulianRodd/Orbit_Prediction}.
+    This study addresses the two-body and three-body problems using deep learning models, with a focus on Physics-Informed Neural Networks (PINNs). This papers covers data generation for multiple orbital scenarios, implement and compare different neural network architectures (MLP, LSTM, and PINN), and evaluate their performance in predicting trajectories. The approach demonstrates the potential of machine learning techniques in predicting orbits and velocities, particularly highlighting the advantages of physics-informed methods. The codebase for this project is available on GitHub at \url{https://github.com/JulianRodd/Orbit_Prediction}. Appendix \ref{sec:repository} provides details about the repository structure and the README file in the root directory constains instructions for running the code.
     \end{abstract}
 \end{@twocolumnfalse}
 ]
   \section{Introduction}
   \label{sec:introduction}
-  The two-body and three-body problems are fundamental challenges in celestial mechanics. This study explores the application of deep learning models to solve these problems, addressing several key aspects of the assignment. We begin by simulating two-body and three-body problems with varying initial conditions and increased acceleration scenarios. We then implement and compare different neural network architectures, including Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Networks (PINNs). Our evaluation focuses on model performance in predicting orbital trajectories for different time horizons, specifically 10, 100, and 500 steps. We analyze the advantages of incorporating physical constraints in neural networks through PINNs, aiming to improve prediction accuracy and physical consistency. Finally, we assess model robustness under different levels of measurement uncertainty, reflecting real-world challenges in astronomical observations. Through this comprehensive approach, we aim to demonstrate the potential of machine learning techniques in solving complex gravitational problems and provide insights into their applicability in celestial mechanics.
+  The two-body and three-body problems are challenges in physics. This study explores the application of deep learning models to solve these problems. We begin by simulating two-body and three-body problems with varying initial conditions and increased acceleration and additional force scenarios. We then implement and compare different neural network architectures, including Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Networks (PINNs). Our evaluation focuses on model performance in predicting orbital trajectories for different time horizons, specifically 10, 100, and 500 steps. We analyze the advantages of incorporating physical constraints in neural networks through PINNs, aiming to improve prediction accuracy and physical consistency. Finally, we assess model robustness under different levels of measurement uncertainty, reflecting real-world challenges in astronomical observations. Through this comprehensive approach, we aim to demonstrate the potential of machine learning techniques in solving complex gravitational problems and provide insights into their applicability in celestial mechanics.
 
 \section{Literature Review}
 \label{sec:literature}
@@ -383,3 +383,47 @@ In conclusion, while our deep learning models show significant promise in solvin
   \end{tabular}
 \end{figure}
 \end{document}
+
+\section{Repository}
+\label{sec:repository}
+\begin{itemize}
+  \item \textbf{checkpoints/}: Contains saved model states for different architectures and datasets
+  \begin{itemize}
+      \item Subfolders for LSTM, MLP, and PINN models
+      \item Further subdivided by dataset types (three\_body, two\_body, two\_body\_force\_increased\_acceleration)
+      \item Each subfolder contains model states (saved with Pytorch) for different folds (e.g., lstm\_fold0.pth, lstm\_fold1.pth, etc.)
+  \end{itemize}
+
+  \item \textbf{code/}: Main source code directory
+  \begin{itemize}
+      \item \texttt{data\_generation/}: Scripts for generating simulation data
+      \item \texttt{inference/}: Code for running model inference and evaluation
+      \item \texttt{training/}: Implementation of different model architectures and training procedures
+      \begin{itemize}
+          \item Separate subfolders for LSTM, MLP, and PINN models
+          \item Each subfolder contains architecture, constants, and training scripts
+      \end{itemize}
+  \end{itemize}
+
+  \item \textbf{datasets/}: Contains the generated datasets for different scenarios
+  \begin{itemize}
+      \item Subfolders for three\_body, two\_body, and two\_body\_force\_increased\_acceleration
+      \item Each scenario has train, validation, and test data splits
+      \item Training and validation data further divided into multiple folds for cross-validation
+  \end{itemize}
+
+  \item \textbf{images/}: Visualizations of trajectories and velocities for different scenarios
+  \begin{itemize}
+      \item Separate subfolders for each scenario (three\_body, two\_body, two\_body\_force\_increased\_acceleration)
+      \item Contains plots of individual trajectories, velocities, and combined
+  \end{itemize}
+
+  \item \textbf{inference\_results/}: Stores the output from model inference and evaluation
+  \begin{itemize}
+      \item CSV files with aggregated results for each model and dataset combination
+      \item \texttt{consolidated\_results.csv} summarizing all experiments, used in table \ref{tab:model_comprehensive_mse_compact}
+      \item Subfolders containing detailed predictions and visualizations for each model, dataset, and prediction step combination
+      \item Subfolder \texttt{sequence\_results} contains the actual predictions for each sequence length / model / dataset combination
+  \end{itemize}
+
+\end{itemize}

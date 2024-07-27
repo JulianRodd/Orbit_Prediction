@@ -26,15 +26,15 @@ def plot_predictions(
             predicted[:, 1],
             color="red",
             label="Predicted",
-            linewidth=2,
+            linewidth=3,
             linestyle="--",
         )
         plt.plot(
             actual[:, 0],
             actual[:, 1],
-            color="green",
+            color="limegreen",
             label="Target",
-            linewidth=2,
+            linewidth=3,
             linestyle="--",
         )
 
@@ -119,15 +119,15 @@ def plot_full_trajectory(
             predicted[:, 1],
             color="red",
             label="Predicted",
-            linewidth=2,
+            linewidth=3,
             linestyle="--",
         )
         plt.plot(
             full_trajectory[prediction_start:prediction_start+steps, 0],
             full_trajectory[prediction_start:prediction_start+steps, 1],
-            color="green",
+            color="limegreen",
             label="Target",
-            linewidth=2,
+            linewidth=3,
             linestyle="--",
         )
 
