@@ -1,7 +1,7 @@
 import logging
 
 import numpy as np
-from data_generation.constants import DT, M1, RELATIVE_UNCERTAINTY, G, UNCERTAINTY_PERIOD
+from data_generation.constants import ADDITIONAL_FORCE_AMPLITUDE, DT, M1, RELATIVE_UNCERTAINTY, G, SMALL_ACCELERATION_CHANGE_PERIOD, UNCERTAINTY_PERIOD
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -29,7 +29,7 @@ def gravitational_force(M, m, r1, r2):
 
 
 
-def additional_force(v, a_amplitude=5e-9):
+def additional_force(v, a_amplitude=ADDITIONAL_FORCE_AMPLITUDE):
     """Calculate additional sinusoidal force."""
     try:
         force_x = a_amplitude * np.sin(v[0])
@@ -67,13 +67,29 @@ def apply_periodic_uncertainty(
 
     return value + interpolated_uncertainty
 
+def apply_periodic_effect(value, step, amplitude, period=SMALL_ACCELERATION_CHANGE_PERIOD):
+    """Apply a periodic effect with smooth interpolation."""
+    if step % period == 0:
+        apply_periodic_effect.current_effect = amplitude * np.random.randn(2)
+        apply_periodic_effect.steps_since_last_application = 0
+
+    interpolation_factor = (step % period) / period
+    interpolated_effect = apply_periodic_effect.current_effect * interpolation_factor
+
+    apply_periodic_effect.steps_since_last_application += 1
+
+    return value + interpolated_effect
+
+# Initialize static variables
+apply_periodic_effect.current_effect = np.zeros(2)
+apply_periodic_effect.steps_since_last_application = 0
 
 def euler_update(r, v, F, m, step, dt=DT, increased_acceleration=0.00):
     """Update position and velocity using Euler method with periodic uncertainty application."""
     try:
         a = F / m
         if increased_acceleration:
-            a += increased_acceleration * F / m
+            a = apply_periodic_effect(a, step, increased_acceleration * F / m)
         v_next = v + a * dt
         r_next = r + v_next * dt  # Use current velocity for position update
 

@@ -70,7 +70,7 @@ def main():
         )
     elif args.mode == "generate_data":
         logger.info("Starting data generation mode")
-        data_generation()
+        data_generation(problem_types=args.datasets)
 
 
 if __name__ == "__main__":

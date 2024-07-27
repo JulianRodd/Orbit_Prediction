@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from training.constants import DATASET_TYPES
 from data_generation.constants import (
     DT,
     HEAVY_BODY1_POSITION,
@@ -43,7 +44,7 @@ logging.basicConfig(
 def create_folder_structure():
     """Create necessary folders for data and plots."""
     try:
-        for problem in ["two_body", "two_body_force", "three_body"]:
+        for problem in ["two_body", "two_body_force_increased_acceleration", "three_body"]:
             for dataset in ["train", "val", "test"]:
                 os.makedirs(f"datasets/{problem}/{dataset}", exist_ok=True)
         os.makedirs("plots/trajectories", exist_ok=True)
@@ -102,13 +103,15 @@ def simulate_trajectory(problem_type, initial_conditions):
                 r2, v2 = euler_update(r2, v2, F, m, step)
                 positions.append(r2)
                 velocities.append(v2)
-            else:  # two_body_force
+            elif problem_type == "two_body_force_increased_acceleration":
                 F = gravitational_force(M1, m, r1, r2) + additional_force(v2)
                 r2, v2 = euler_update(
                     r2, v2, F, m, step, increased_acceleration=SMALL_ACCELERATION_CHANGE
                 )
                 positions.append(r2)
                 velocities.append(v2)
+            else:
+                raise ValueError(f"Invalid problem type: {problem_type}")
             if step % 1000 == 0:
                 debug_orbital_characteristics(r2, v2, F, m)
         return np.array(positions), np.array(velocities)
@@ -210,12 +213,12 @@ def create_datasets(problem_type):
         raise
 
 
-def data_generation():
+def data_generation(problem_types = DATASET_TYPES):
     try:
         logging.info("Starting data generation process")
         create_folder_structure()
 
-        for problem_type in ["two_body", "two_body_force", "three_body"]:
+        for problem_type in problem_types:
             all_positions, all_velocities, num_train_val = create_datasets(problem_type)
 
             # Plot individual trajectories and velocities
