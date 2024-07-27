@@ -21,8 +21,6 @@ from .utils import (
     predict_trajectory,
 )
 
-# set logger to debug
-
 logger = logging.getLogger(__name__)
 
 

@@ -1,14 +1,13 @@
 import logging
 import traceback
 
+import wandb
 from tqdm import tqdm
 from training.constants import NUM_FOLDS
 from training.lstm.train import train_lstm
 from training.mlp.train import train_mlp
 from training.pinn.train import train_pinn
 from training.utils import load_data, set_seed
-
-import wandb
 
 logger = logging.getLogger(__name__)
 

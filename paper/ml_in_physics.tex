@@ -31,7 +31,7 @@
 ]
   \section{Introduction}
   \label{sec:introduction}
-  The two-body and three-body problems are challenges in physics. This study explores the application of deep learning models to solve these problems. We begin by simulating two-body and three-body problems with varying initial conditions and increased acceleration and additional force scenarios. We then implement and compare different neural network architectures, including Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Networks (PINNs). Our evaluation focuses on model performance in predicting orbital trajectories for different time horizons, specifically 10, 100, and 500 steps. We analyze the advantages of incorporating physical constraints in neural networks through PINNs, aiming to improve prediction accuracy and physical consistency. Finally, we assess model robustness under different levels of measurement uncertainty, reflecting real-world challenges in astronomical observations. Through this comprehensive approach, we aim to demonstrate the potential of machine learning techniques in solving complex gravitational problems and provide insights into their applicability in celestial mechanics.
+  The two-body and three-body problems are challenges in physics. This study explores the application of deep learning models to solve these problems. We begin by simulating two-body and three-body problems with varying initial conditions and increased acceleration and additional force scenarios. We then implement and compare different neural network architectures, including Multilayer Perceptron (MLP), Long Short-Term Memory (LSTM), and Physics-Informed Neural Networks (PINNs). Our evaluation focuses on model performance in predicting orbital trajectories for different time horizons, specifically 10, 100, and 500 steps. We analyze the advantages of incorporating physical constraints in neural networks through PINNs, aiming to improve prediction accuracy and physical consistency. By comparing the performance of these models across the various scenarios, we aim to provide insights into the strengths and limitations of different deep learning approaches in solving gravitational problems.
 
 \section{Literature Review}
 \label{sec:literature}
@@ -67,7 +67,7 @@ To address the challenge of predicting orbital dynamics, we implemented and comp
   \scriptsize
   \caption{Overview of Model Architectures}
   \label{tab:model-architectures}
-  \begin{tabular}{@{}llll@{}}
+  \begin{tabular}{@llll@{}}
   \toprule
   \textbf{Feature} & \textbf{MLP} & \textbf{LSTM} & \textbf{PINN} \\
   \midrule
@@ -148,8 +148,7 @@ This rich variety of behaviors in the three-body problem underscores the challen
 
 \subsection{Model Performance Comparison}
 
-
-Table \ref{tab:model_comprehensive_mse_compact} presents Mean Squared Error (MSE) results for three different models (MLP, LSTM, and PINN) across three problem types (Two-Body, Two-Body with Acceleration, and Three-Body) for various prediction horizons (10, 100, and 500 steps). Several interesting patterns emerge. In the Two-Body Problem, MLP and PINN generally outperform LSTM in position prediction, with PINN showing the lowest standard deviation in short-term predictions, indicating more consistent performance. All models perform similarly in velocity prediction, with slight improvements for longer horizons. For the Two-Body Problem with Acceleration, MLP consistently outperforms both LSTM and PINN across all prediction horizons, while PINN shows the highest MSE and standard deviation, suggesting it struggles with the additional complexity. In the Three-Body Problem, PINN performs best in position prediction for short-term predictions (10 steps), while LSTM shows superior performance for longer prediction horizons (100 and 500 steps) in both position and velocity. Notably, MLP exhibits extremely high MSE for 100-step predictions in this scenario, indicating potential instability. Overall, these results suggest that different models excel in different scenarios: MLP performs well in simpler problems and with added acceleration, LSTM shows strength in long-term predictions for complex systems, and PINN demonstrates advantages in short-term predictions for the most complex (three-body) problem. These findings highlight the importance of choosing the appropriate model based on the specific characteristics of the orbital dynamics problem at hand.
+Table \ref{tab:model_comprehensive_mse_compact} reveals intriguing patterns in the performance of MLP, LSTM, and PINN models across various gravitational scenarios. In the standard two-body problem, PINN demonstrates superior performance, consistently achieving the lowest position MSE with remarkably low standard deviations, particularly for short-term predictions. This suggests PINN's ability to capture the underlying physics of simple orbital dynamics effectively. Interestingly, for velocity predictions in this scenario, all models perform comparably, with a slight edge to MLP on the test set. The two-body problem with acceleration presents a different picture, where MLP unexpectedly outshines both LSTM and PINN, especially in position predictions. This suggests that the added complexity from acceleration might be more readily captured by MLP's flexible architecture. The three-body problem unveils the most dramatic differences in model performance. While PINN and LSTM show reasonable performance, MLP exhibits extreme instability for 100-step predictions, with position MSE values soaring to the order of 10^27. This instability highlights the challenge of predicting chaotic systems with simpler architectures. LSTM demonstrates robust performance in this complex scenario, particularly for longer prediction horizons, indicating its strength in capturing long-term dependencies in chaotic systems. PINN, while performing well in short-term predictions for the three-body problem, shows increasing MSE for longer horizons, suggesting potential limitations in maintaining physical constraints over extended periods in highly complex systems. These results underscore the importance of choosing appropriate models based on the specific characteristics and complexity of the orbital dynamics problem at hand, with each model showing distinct strengths in different scenarios.
 
 For a visual representation of the models' performance, refer to Appendices \ref{sec:two_body_predictions}, \ref{sec:two_body_acc_predictions}, and \ref{sec:three_body_predictions}, which contain trajectory plots comparing predicted and actual paths for the first spaceship in each scenario, providing a tangible illustration of the models' outputs across different problem types and prediction horizons.
 
@@ -166,56 +165,56 @@ For a visual representation of the models' performance, refer to Appendices \ref
   \midrule
   \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Two-Body}}}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{MLP}}
-  & Tr & 5.01e+7 (3.27e+6) & 0.62 (1.78e-4) & 5.15e+7 (3.80e+6) & 0.59 (4.82e-4) & 5.19e+7 (3.71e+6) & \textbf{0.43} (7.64e-4) \\
-  & & Va & \textbf{4.99e+7} (3.46e+6) & 0.62 (1.91e-4) & 5.08e+7 (3.59e+6) & 0.59 (5.07e-4) & 5.12e+7 (3.43e+6) & \textbf{0.43} (8.21e-4) \\
-  & & Te & \textbf{5.01e+7} (3.31e+6) & 0.62 (1.80e-4) & 5.14e+7 (3.77e+6) & 0.59 (4.87e-4) & 5.17e+7 (3.67e+6) & \textbf{0.43} (7.76e-4) \\
+  & Tr & 4.99e+7 (2.22e+6) & 0.41 (2.63e-5) & 5.26e+7 (3.43e+6) & 0.41 (4.69e-4) & 5.27e+7 (3.44e+6) & 0.41 (4.88e-4) \\
+  & & Va & 4.98e+7 (2.24e+6) & 0.42 (3.09e-5) & 5.26e+7 (3.41e+6) & 0.41 (4.70e-4) & 5.27e+7 (3.44e+6) & 0.41 (4.91e-4) \\
+  & & Te & 4.98e+7 (2.24e+6) & \textbf{0.40} (3.06e-5) & 5.26e+7 (3.41e+6) & \textbf{0.40} (4.59e-4) & 5.27e+7 (3.44e+6) & \textbf{0.40} (4.79e-4) \\
   \cmidrule(lr){2-9}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{LSTM}}
-  & Tr & 7.18e+7 (2.25e+7) & 0.62 (5.33e-4) & 7.74e+7 (2.43e+7) & 0.59 (8.63e-4) & 7.73e+7 (2.46e+7) & 0.43 (8.41e-4) \\
-  & & Va & 7.03e+7 (2.37e+7) & 0.62 (5.71e-4) & 7.64e+7 (2.59e+7) & 0.59 (9.06e-4) & 7.65e+7 (2.62e+7) & 0.43 (9.00e-4) \\
-  & & Te & 7.15e+7 (2.28e+7) & 0.62 (5.41e-4) & 7.72e+7 (2.46e+7) & 0.59 (8.72e-4) & 7.72e+7 (2.49e+7) & 0.43 (8.53e-4) \\
+  & Tr & 7.47e+7 (2.25e+7) & 0.41 (9.06e-4) & 7.66e+7 (2.62e+7) & 0.41 (2.04e-3) & 7.73e+7 (2.63e+7) & 0.41 (2.11e-3) \\
+  & & Va & 7.42e+7 (2.31e+7) & 0.42 (8.86e-4) & 7.49e+7 (2.85e+7) & 0.41 (2.02e-3) & 7.56e+7 (2.87e+7) & 0.41 (2.13e-3) \\
+  & & Te & 7.41e+7 (2.32e+7) & \textbf{0.40} (8.65e-4) & 7.49e+7 (2.85e+7) & \textbf{0.40} (1.97e-3) & 7.56e+7 (2.87e+7) & \textbf{0.39} (2.07e-3) \\
   \cmidrule(lr){2-9}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{PINN}}
-  & Tr & 5.03e+7 (\textbf{2.16e+6}) & \textbf{0.62} (1.03e-4) & 5.27e+7 (3.95e+6) & 0.59 (5.13e-4) & \textbf{5.06e+7} (5.47e+6) & 0.43 (8.49e-4) \\
-  & & Va & 5.00e+7 (\textbf{2.11e+6}) & \textbf{0.62} (1.02e-4) & 5.18e+7 (3.37e+6) & 0.59 (4.99e-4) & \textbf{4.92e+7} (4.16e+6) & 0.43 (7.29e-4) \\
-  & & Te & 5.03e+7 (\textbf{2.15e+6}) & \textbf{0.62} (1.03e-4) & 5.25e+7 (3.86e+6) & 0.59 (5.11e-4) & \textbf{5.03e+7} (5.27e+6) & 0.43 (8.30e-4) \\
+  & Tr & \textbf{4.88e+7} (\textbf{7.52e+5}) & 0.41 (6.49e-5) & \textbf{4.85e+7} (2.46e+6) & 0.41 (8.23e-4) & \textbf{4.82e+7} (2.88e+6) & 0.41 (9.81e-4) \\
+  & & Va & \textbf{4.92e+7} (\textbf{6.12e+5}) & 0.42 (6.14e-5) & \textbf{4.85e+7} (2.46e+6) & 0.42 (8.14e-4) & \textbf{4.82e+7} (2.87e+6) & 0.41 (9.84e-4) \\
+  & & Te & \textbf{4.88e+7} (\textbf{7.52e+5}) & 0.40 (6.46e-5) & \textbf{4.85e+7} (2.46e+6) & 0.40 (7.98e-4) & \textbf{4.82e+7} (2.87e+6) & 0.40 (9.60e-4) \\
   \midrule
   \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Two-Body Accel.}}}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{MLP}}
-  & Tr & \textbf{4.29e+7} (4.64e+6) & \textbf{0.58} (7.61e-5) & \textbf{4.24e+7} (4.78e+6) & \textbf{0.55} (1.78e-4) & \textbf{4.31e+7} (3.58e+6) & \textbf{0.40} (6.90e-4) \\
-  & & Va & \textbf{4.32e+7} (4.93e+6) & \textbf{0.58} (7.22e-5) & \textbf{4.25e+7} (5.10e+6) & \textbf{0.55} (1.57e-4) & \textbf{4.33e+7} (3.78e+6) & \textbf{0.40} (7.03e-4) \\
-  & & Te & \textbf{4.30e+7} (4.70e+6) & \textbf{0.58} (7.54e-5) & \textbf{4.24e+7} (4.84e+6) & \textbf{0.55} (1.70e-4) & \textbf{4.31e+7} (3.62e+6) & \textbf{0.40} (6.92e-4) \\
+  & Tr & \textbf{4.40e+7} (2.40e+6) & 0.41 (2.09e-4) & \textbf{4.47e+7} (8.41e+6) & 0.41 (1.04e-3) & \textbf{4.21e+7} (7.91e+6) & 0.41 (1.56e-3) \\
+  & & Va & \textbf{4.38e+7} (2.40e+6) & \textbf{0.36} (1.95e-4) & \textbf{4.47e+7} (8.45e+6) & \textbf{0.36} (9.63e-4) & \textbf{4.21e+7} (7.91e+6) & \textbf{0.36} (1.45e-3) \\
+  & & Te & \textbf{4.39e+7} (2.44e+6) & 0.45 (2.16e-4) & \textbf{4.47e+7} (8.42e+6) & 0.45 (1.07e-3) & \textbf{4.21e+7} (7.89e+6) & 0.45 (1.63e-3) \\
   \cmidrule(lr){2-9}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{LSTM}}
-  & Tr & 4.92e+7 (2.72e+6) & 0.58 (9.30e-5) & 4.80e+7 (3.00e+6) & 0.55 (1.81e-4) & 4.82e+7 (2.85e+6) & 0.40 (3.67e-4) \\
-  & & Va & 4.89e+7 (2.78e+6) & 0.58 (7.65e-5) & 4.84e+7 (2.93e+6) & 0.55 (1.82e-4) & 4.85e+7 (2.87e+6) & 0.40 (2.78e-4) \\
-  & & Te & 4.91e+7 (2.73e+6) & 0.58 (9.06e-5) & 4.81e+7 (2.99e+6) & 0.55 (1.79e-4) & 4.82e+7 (2.86e+6) & 0.40 (3.52e-4) \\
+  & Tr & 5.31e+7 (9.20e+6) & 0.41 (3.57e-4) & 5.41e+7 (1.20e+7) & 0.41 (1.12e-3) & 5.42e+7 (1.19e+7) & 0.41 (1.13e-3) \\
+  & & Va & 5.28e+7 (9.51e+6) & \textbf{0.36} (3.34e-4) & 5.41e+7 (1.19e+7) & \textbf{0.36} (1.05e-3) & 5.42e+7 (1.19e+7) & \textbf{0.36} (1.05e-3) \\
+  & & Te & 5.31e+7 (9.13e+6) & 0.45 (3.65e-4) & 5.40e+7 (1.20e+7) & 0.45 (1.17e-3) & 5.41e+7 (1.19e+7) & 0.45 (1.17e-3) \\
   \cmidrule(lr){2-9}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{PINN}}
-  & Tr & 7.76e+7 (3.16e+7) & 0.58 (4.57e-4) & 7.32e+7 (2.30e+7) & 0.55 (1.48e-3) & 7.00e+7 (2.71e+7) & 0.40 (1.13e-3) \\
-  & & Va & 6.98e+7 (2.56e+7) & 0.58 (4.53e-4) & 6.85e+7 (2.07e+7) & 0.55 (1.50e-3) & 6.52e+7 (2.56e+7) & 0.40 (1.05e-3) \\
-  & & Te & 7.61e+7 (3.07e+7) & 0.58 (4.57e-4) & 7.23e+7 (2.27e+7) & 0.55 (1.48e-3) & 6.90e+7 (2.69e+7) & 0.40 (1.12e-3) \\
+  & Tr & 7.49e+7 (2.92e+7) & 0.41 (1.39e-3) & 7.11e+7 (3.11e+7) & 0.41 (1.04e-3) & 7.47e+7 (2.73e+7) & 0.41 (9.67e-4) \\
+  & & Va & 7.43e+7 (2.97e+7) & \textbf{0.36} (1.29e-3) & 7.11e+7 (3.11e+7) & \textbf{0.36} (9.67e-4) & 7.47e+7 (2.73e+7) & \textbf{0.36} (8.97e-4) \\
+  & & Te & 7.52e+7 (2.88e+7) & 0.45 (1.45e-3) & 7.12e+7 (3.12e+7) & 0.45 (1.07e-3) & 7.49e+7 (2.73e+7) & 0.45 (9.92e-4) \\
   \midrule
   \multirow{9}{*}{\rotatebox[origin=c]{90}{\textbf{Three-Body}}}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{MLP}}
-  & Tr & 6.72e+8 (5.59e+8) & 0.16 (9.30e-3) & 4.03e+26 (1.04e+27) & 4.90e+14 (1.26e+15) & 9.26e+9 (1.54e+10) & 0.15 (9.86e-3) \\
-  & & Va & 4.26e+8 (3.63e+8) & 0.16 (1.01e-2) & 9.30e+25 (2.63e+26) & 1.13e+14 (3.20e+14) & 9.21e+9 (1.54e+10) & 0.15 (9.79e-3) \\
-  & & Te & 5.43e+8 (4.93e+8) & 0.13 (2.22e-3) & 1.52e+26 (3.04e+26) & 1.86e+14 (3.71e+14) & 9.27e+9 (1.53e+10) & 0.14 (3.22e-3) \\
+  & Tr & 9.91e+8 (1.01e+9) & 0.28 (3.94e-3) & \textbf{7.16e+27} (\textbf{1.43e+28}) & \textbf{8.72e+15} (\textbf{1.74e+16}) & 9.55e+9 (1.60e+10) & 0.28 (4.86e-3) \\
+  & & Va & 1.13e+9 (1.18e+9) & \textbf{0.12} (3.47e-3) & \textbf{7.43e+27} (\textbf{1.49e+28}) & \textbf{9.06e+15} (\textbf{1.81e+16}) & 9.47e+9 (1.60e+10) & \textbf{0.12} (4.41e-3) \\
+  & & Te & 3.07e+9 (4.52e+9) & 0.18 (2.68e-3) & \textbf{4.51e+27} (\textbf{9.02e+27}) & \textbf{5.49e+15} (\textbf{1.10e+16}) & 1.08e+11 (1.65e+11) & 0.17 (6.58e-3) \\
   \cmidrule(lr){2-9}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{LSTM}}
-  & Tr & 6.63e+9 (6.26e+9) & 0.15 (9.99e-3) & \textbf{2.18e+10} (1.29e+10) & \textbf{0.14} (1.07e-2) & \textbf{2.47e+10} (1.46e+10) & \textbf{0.14} (1.06e-2) \\
-  & & Va & 7.23e+9 (7.67e+9) & 0.15 (1.03e-2) & \textbf{2.33e+10} (1.41e+10) & \textbf{0.14} (1.04e-2) & \textbf{2.64e+10} (1.60e+10) & \textbf{0.14} (1.27e-2) \\
-  & & Te & 3.72e+9 (1.31e+9) & 0.13 (6.07e-3) & \textbf{2.06e+10} (1.04e+10) & \textbf{0.13} (6.82e-3) & \textbf{2.40e+10} (1.28e+10) & \textbf{0.13} (6.67e-3) \\
+  & Tr & 1.07e+10 (7.68e+9) & 0.27 (9.74e-3) & 2.94e+10 (1.97e+10) & 0.26 (9.69e-3) & 2.94e+10 (1.98e+10) & 0.26 (9.71e-3) \\
+  & & Va & 1.47e+10 (1.16e+10) & \textbf{0.11} (5.90e-3) & 2.51e+10 (1.71e+10) & \textbf{0.11} (6.37e-3) & 2.51e+10 (1.71e+10) & \textbf{0.11} (6.38e-3) \\
+  & & Te & \textbf{1.22e+10} (\textbf{1.06e+10}) & 0.17 (5.69e-3) & \textbf{2.48e+10} (\textbf{1.33e+10}) & 0.16 (7.13e-3) & \textbf{2.48e+10} (\textbf{1.34e+10}) & 0.16 (7.11e-3) \\
   \cmidrule(lr){2-9}
   & \multirow{3}{*}{\rotatebox[origin=c]{90}{PINN}}
-  & Tr & \textbf{1.41e+9} (2.25e+9) & 0.15 (9.40e-3) & 2.38e+10 (4.51e+10) & 0.15 (1.03e-2) & 3.30e+10 (6.33e+10) & 0.15 (1.06e-2) \\
-  & & Va & \textbf{1.02e+9} (1.62e+9) & 0.16 (1.05e-2) & 2.65e+10 (4.66e+10) & 0.15 (1.08e-2) & 3.74e+10 (6.63e+10) & 0.15 (1.30e-2) \\
-  & & Te & \textbf{4.90e+8} (3.95e+8) & \textbf{0.13} (2.41e-3) & 2.29e+10 (4.26e+10) & 0.13 (4.80e-3) & 3.36e+10 (6.34e+10) & 0.14 (6.14e-3) \\
+  & Tr & \textbf{2.53e+9} (\textbf{3.84e+9}) & 0.28 (6.15e-3) & 3.76e+10 (7.15e+10) & 0.27 (8.13e-3) & 3.62e+10 (6.84e+10) & 0.27 (8.20e-3) \\
+  & & Va & \textbf{4.51e+9} (\textbf{7.87e+9}) & \textbf{0.12} (5.13e-3) & 3.76e+10 (7.13e+10) & \textbf{0.12} (6.23e-3) & 3.62e+10 (6.84e+10) & \textbf{0.12} (6.07e-3) \
+  & & Te & \textbf{3.27e+9} (\textbf{5.10e+9}) & 0.18 (6.64e-3) & 3.74e+10 (7.12e+10) & 0.17 (6.65e-3) & 3.62e+10 (6.84e+10) & 0.17 (7.18e-3) \\
   \bottomrule
   \end{tabular}
-  \caption{Mean Squared Error (MSE) for different models across problem types, showing mean (M) and standard deviation (SD) for Position (Pos) and Velocity (Vel) at 10, 100, and 500 prediction steps on train (Tr), validation (Va), and test (Te) sets}
+  \caption{Mean Squared Error (MSE) for different models across problem types, showing mean (M) and standard deviation (SD) (model uncertainty) over 5 folds for Position (Pos) and Velocity (Vel) at 10, 100, and 500 prediction steps on train (Tr), validation (Va), and test (Te) sets}
   \label{tab:model_comprehensive_mse_compact}
-\end{table}
+  \end{table}
 \twocolumn
 
 \section{Discussion}

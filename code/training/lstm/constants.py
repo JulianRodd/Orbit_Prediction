@@ -1,5 +1,3 @@
-from training.constants import N_STEPS
-
 # LSTM architecture parameters
 INPUT_SIZE = 4  # 4 features (x, y, vx, vy)
 HIDDEN_SIZE = 128

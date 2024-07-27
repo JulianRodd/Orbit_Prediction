@@ -1,6 +1,5 @@
 import numpy as np
 
-
 # Physical constants
 G = 6.67430e-11  # Gravitational constant (m^3 kg^-1 s^-2)
 M1 = 1e9  # Mass of the first heavy object (kg)

@@ -1,6 +1,7 @@
 import torch.nn as nn
-from training.constants import DEVICE
 import torch.nn.functional as F
+from training.constants import DEVICE
+
 
 class MLP(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, dropout_rate=0.2):
@@ -31,6 +32,7 @@ class MLP(nn.Module):
 
         # Output layer
         return self.fc4(x)
+
 
 def create_mlp_model(input_size, hidden_size, output_size, dropout_rate=0.2):
     return MLP(input_size, hidden_size, output_size, dropout_rate).to(DEVICE)

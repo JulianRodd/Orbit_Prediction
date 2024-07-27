@@ -1,5 +1,4 @@
 import logging
-from typing import List, Union
 
 import numpy as np
 import pandas as pd
@@ -20,14 +19,9 @@ from .constants import (
     PINN_HIDDEN_SIZE,
     PINN_INPUT_SIZE,
     PINN_OUTPUT_SIZE,
-    NUM_FOLDS
 )
 
 logger = logging.getLogger(__name__)
-
-
-import numpy as np
-import pandas as pd
 
 
 def calculate_mse(actual, predicted):
@@ -35,7 +29,6 @@ def calculate_mse(actual, predicted):
     velocity_mse = np.mean((actual[:, 2:] - predicted[:, 2:]) ** 2)
     combined_mse = np.mean((actual - predicted) ** 2)
     return position_mse, velocity_mse, combined_mse
-
 
 
 def load_data(dataset_type, split, fold=None):
@@ -46,31 +39,41 @@ def load_data(dataset_type, split, fold=None):
             # For test set, fit scaler on all training data
             train_data = []
             for i in range(5):  # Assuming 5 folds, adjust if different
-                train_df = pd.read_csv(f"datasets/{dataset_type}/train/{dataset_type}_train_fold{i}.csv")
+                train_df = pd.read_csv(
+                    f"datasets/{dataset_type}/train/{dataset_type}_train_fold{i}.csv"
+                )
                 train_data.append(train_df[columns_to_scale])
             all_train_data = pd.concat(train_data, axis=0)
 
             scaler = MinMaxScaler()
             scaler.fit(all_train_data)
 
-            df = pd.read_csv(f"datasets/{dataset_type}/{split}/{dataset_type}_{split}.csv")
+            df = pd.read_csv(
+                f"datasets/{dataset_type}/{split}/{dataset_type}_{split}.csv"
+            )
         else:
             # For train and val sets, fit scaler on the specific fold's training data
             if fold is None:
                 raise ValueError("Fold must be specified for train and validation sets")
 
-            train_df = pd.read_csv(f"datasets/{dataset_type}/train/{dataset_type}_train_fold{fold}.csv")
+            train_df = pd.read_csv(
+                f"datasets/{dataset_type}/train/{dataset_type}_train_fold{fold}.csv"
+            )
             scaler = MinMaxScaler()
             scaler.fit(train_df[columns_to_scale])
 
-            df = pd.read_csv(f"datasets/{dataset_type}/{split}/{dataset_type}_{split}_fold{fold}.csv")
+            df = pd.read_csv(
+                f"datasets/{dataset_type}/{split}/{dataset_type}_{split}_fold{fold}.csv"
+            )
 
         # Transform the data using the scaler
         df[columns_to_scale] = scaler.transform(df[columns_to_scale])
 
         return df, scaler
     except Exception as e:
-        logger.error(f"Error loading data for {dataset_type}, {split}, fold {fold}: {str(e)}")
+        logger.error(
+            f"Error loading data for {dataset_type}, {split}, fold {fold}: {str(e)}"
+        )
         raise
 
 
@@ -126,6 +129,7 @@ def denormalize_data(data, scaler):
     else:
         raise TypeError("Data must be either a numpy array or a torch Tensor")
 
+
 def predict_trajectory(
     model: torch.nn.Module,
     initial_sequence: torch.Tensor,
@@ -135,7 +139,9 @@ def predict_trajectory(
 ):
     try:
         current_input = initial_sequence.clone()
-        predictions = [denormalize_data(current_input[-1].cpu().numpy().reshape(1, -1), scaler)[0]]
+        predictions = [
+            denormalize_data(current_input[-1].cpu().numpy().reshape(1, -1), scaler)[0]
+        ]
 
         with torch.no_grad():
             for _ in range(steps - 1):  # -1 because we already have the initial point

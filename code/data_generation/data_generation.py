@@ -3,7 +3,6 @@ import os
 
 import numpy as np
 import pandas as pd
-from training.constants import DATASET_TYPES
 from data_generation.constants import (
     DT,
     HEAVY_BODY1_POSITION,
@@ -24,8 +23,6 @@ from data_generation.plotting import (
     plot_trajectory,
     plot_velocity,
 )
-from sklearn.model_selection import KFold
-from tqdm import tqdm
 from data_generation.utils import (
     additional_force,
     debug_orbital_characteristics,
@@ -35,6 +32,9 @@ from data_generation.utils import (
     is_complex_orbit,
     is_orbiting,
 )
+from sklearn.model_selection import KFold
+from tqdm import tqdm
+from training.constants import DATASET_TYPES
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -44,7 +44,11 @@ logging.basicConfig(
 def create_folder_structure():
     """Create necessary folders for data and plots."""
     try:
-        for problem in ["two_body", "two_body_force_increased_acceleration", "three_body"]:
+        for problem in [
+            "two_body",
+            "two_body_force_increased_acceleration",
+            "three_body",
+        ]:
             for dataset in ["train", "val", "test"]:
                 os.makedirs(f"datasets/{problem}/{dataset}", exist_ok=True)
         os.makedirs("plots/trajectories", exist_ok=True)
@@ -81,10 +85,10 @@ def simulate_trajectory(problem_type, initial_conditions):
             v2 = np.array([0.0, get_initial_velocity(M1, m, R)])
 
         else:
-          r1 = np.array([0.0, 0.0])
-          r2 = INITIAL_POSITION_TWO_BODY + np.array([0, initial_conditions])
-          v1 = np.array([0.0, 0.0])
-          v2 = np.array([0.0, get_initial_velocity(M1, m, R)])
+            r1 = np.array([0.0, 0.0])
+            r2 = INITIAL_POSITION_TWO_BODY + np.array([0, initial_conditions])
+            v1 = np.array([0.0, 0.0])
+            v2 = np.array([0.0, get_initial_velocity(M1, m, R)])
         positions = []
         velocities = []
 
@@ -213,7 +217,7 @@ def create_datasets(problem_type):
         raise
 
 
-def data_generation(problem_types = DATASET_TYPES):
+def data_generation(problem_types=DATASET_TYPES):
     try:
         logging.info("Starting data generation process")
         create_folder_structure()

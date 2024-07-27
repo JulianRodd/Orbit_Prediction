@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+import wandb
 from sklearn.preprocessing import MinMaxScaler
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
@@ -15,8 +16,6 @@ from training.constants import (
     EPOCHS,
     N_STEPS,
 )
-
-import wandb
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +94,7 @@ def generic_train(
     scaler,
     model_type,
     use_wandb,
-    dataset_type
+    dataset_type,
 ):
     logger.info(f"Starting training for {model_type} (Fold {fold})")
     best_val_loss = float("inf")
@@ -148,7 +147,9 @@ def generic_train(
     # Make predictions
     try:
         model.load_state_dict(
-            torch.load(f"checkpoints/{model_type}/{dataset_type}/{model_type.lower()}_fold{fold}.pth")
+            torch.load(
+                f"checkpoints/{model_type}/{dataset_type}/{model_type.lower()}_fold{fold}.pth"
+            )
         )
         initial_sequence = next(iter(val_loader))[0][0].to(DEVICE)
         for steps in prediction_steps:
@@ -257,7 +258,11 @@ def plot_predictions(actual, predicted, title, dataset_type, use_wandb=True):
         plt.ylabel("Y position")
         plt.legend()
         os.makedirs(f"plots/{dataset_type}/", exist_ok=True)
-        plt.savefig(f"plots/{dataset_type}/{title}_trajectory_plot.png", dpi=300, bbox_inches="tight")
+        plt.savefig(
+            f"plots/{dataset_type}/{title}_trajectory_plot.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
         plt.close()
 
         # Plot velocity
@@ -271,9 +276,11 @@ def plot_predictions(actual, predicted, title, dataset_type, use_wandb=True):
         plt.ylabel("Velocity magnitude")
         plt.legend()
         os.makedirs(f"plots/{dataset_type}/", exist_ok=True)
-        plt.savefig(f"plots/{dataset_type}/{title}_velocity_plot.png", dpi=300, bbox_inches="tight")
-
-
+        plt.savefig(
+            f"plots/{dataset_type}/{title}_velocity_plot.png",
+            dpi=300,
+            bbox_inches="tight",
+        )
 
         logger.info(f"Plots created for {title}")
     except Exception as e:

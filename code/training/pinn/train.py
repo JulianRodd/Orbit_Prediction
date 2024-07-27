@@ -3,6 +3,7 @@ import os
 
 import torch
 import torch.optim as optim
+import wandb
 from tqdm import tqdm
 from training.constants import DEVICE, EARLY_STOPPING_PATIENCE, EPOCHS, LEARNING_RATE
 from training.pinn.architecture import create_pinn_model
@@ -10,17 +11,26 @@ from training.pinn.constants import HIDDEN_SIZE, INPUT_SIZE, OUTPUT_SIZE
 from training.pinn.pinn_loss import pinn_loss
 from training.utils import plot_predictions, predict_future
 
-import wandb
-
 logger = logging.getLogger(__name__)
 
 
-def train_pinn(train_loader, val_loader, scaler, fold, is_mini, prediction_steps, use_wandb, dataset_type):
+def train_pinn(
+    train_loader,
+    val_loader,
+    scaler,
+    fold,
+    is_mini,
+    prediction_steps,
+    use_wandb,
+    dataset_type,
+):
     try:
         logger.info(f"Initializing PINN model for fold {fold}")
         model = create_pinn_model(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
         optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=True)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer, mode="min", factor=0.5, patience=5, verbose=True
+        )
 
         best_val_loss = float("inf")
         early_stopping_counter = 0
@@ -28,46 +38,63 @@ def train_pinn(train_loader, val_loader, scaler, fold, is_mini, prediction_steps
         for epoch in tqdm(range(EPOCHS), desc=f"Training PINN (Fold {fold})"):
             try:
                 model.train()
-                train_loss, train_mse_loss, train_physics_loss = train_pinn_epoch(model, train_loader, optimizer)
+                train_loss, train_mse_loss, train_physics_loss = train_pinn_epoch(
+                    model, train_loader, optimizer
+                )
 
                 model.eval()
-                val_loss, val_mse_loss, val_physics_loss = validate_pinn_epoch(model, val_loader)
+                val_loss, val_mse_loss, val_physics_loss = validate_pinn_epoch(
+                    model, val_loader
+                )
 
                 scheduler.step(val_loss)
 
-                logger.debug(f"Epoch {epoch}: Train Loss = {train_loss:.6f}, Val Loss = {val_loss:.6f}")
+                logger.debug(
+                    f"Epoch {epoch}: Train Loss = {train_loss:.6f}, Val Loss = {val_loss:.6f}"
+                )
 
                 if use_wandb:
-                    wandb.log({
-                        f"train_loss_fold{fold}": train_loss,
-                        f"train_mse_loss_fold{fold}": train_mse_loss,
-                        f"train_physics_loss_fold{fold}": train_physics_loss,
-                        f"val_loss_fold{fold}": val_loss,
-                        f"val_mse_loss_fold{fold}": val_mse_loss,
-                        f"val_physics_loss_fold{fold}": val_physics_loss,
-                        "epoch": epoch,
-                        "learning_rate": optimizer.param_groups[0]['lr']
-                    })
+                    wandb.log(
+                        {
+                            f"train_loss_fold{fold}": train_loss,
+                            f"train_mse_loss_fold{fold}": train_mse_loss,
+                            f"train_physics_loss_fold{fold}": train_physics_loss,
+                            f"val_loss_fold{fold}": val_loss,
+                            f"val_mse_loss_fold{fold}": val_mse_loss,
+                            f"val_physics_loss_fold{fold}": val_physics_loss,
+                            "epoch": epoch,
+                            "learning_rate": optimizer.param_groups[0]["lr"],
+                        }
+                    )
 
                 if val_loss < best_val_loss:
                     best_val_loss = val_loss
                     os.makedirs(f"checkpoints/PINN/{dataset_type}/", exist_ok=True)
-                    torch.save(model.state_dict(), f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth")
+                    torch.save(
+                        model.state_dict(),
+                        f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth",
+                    )
                     early_stopping_counter = 0
                     logger.info(f"New best model saved for PINN (Fold {fold})")
                 else:
                     early_stopping_counter += 1
                     if early_stopping_counter >= EARLY_STOPPING_PATIENCE:
-                        logger.info(f"Early stopping triggered at epoch {epoch} for PINN (Fold {fold})")
+                        logger.info(
+                            f"Early stopping triggered at epoch {epoch} for PINN (Fold {fold})"
+                        )
                         break
 
             except Exception as e:
-                logger.error(f"Error during PINN training epoch {epoch} for fold {fold}: {str(e)}")
+                logger.error(
+                    f"Error during PINN training epoch {epoch} for fold {fold}: {str(e)}"
+                )
                 raise
 
         # Make predictions
         try:
-            model.load_state_dict(torch.load(f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth"))
+            model.load_state_dict(
+                torch.load(f"checkpoints/PINN/{dataset_type}/pinn_fold{fold}.pth")
+            )
             initial_sequence = next(iter(val_loader))[0][0].to(DEVICE)
             for steps in prediction_steps:
                 predictions = predict_future(model, initial_sequence, scaler, steps)
@@ -107,9 +134,11 @@ def train_pinn_epoch(model, train_loader, optimizer):
         except Exception as e:
             logger.error(f"Error during PINN training step: {str(e)}")
             raise
-    return (total_loss / len(train_loader),
-            total_mse_loss / len(train_loader),
-            total_physics_loss / len(train_loader))
+    return (
+        total_loss / len(train_loader),
+        total_mse_loss / len(train_loader),
+        total_physics_loss / len(train_loader),
+    )
 
 
 def validate_pinn_epoch(model, val_loader):

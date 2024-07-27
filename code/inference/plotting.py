@@ -7,6 +7,8 @@ import numpy as np
 from .constants import HEAVY_BODY1_POSITION, HEAVY_BODY2_POSITION
 
 logger = logging.getLogger(__name__)
+
+
 def plot_predictions(
     actual,
     predicted,
@@ -16,7 +18,7 @@ def plot_predictions(
     spaceship_id,
     output_folder,
     split,
-    prediction_start
+    prediction_start,
 ):
     try:
         plt.figure(figsize=(12, 10))
@@ -45,7 +47,12 @@ def plot_predictions(
             actual[-1, 0], actual[-1, 1], color="purple", s=100, label="End", zorder=5
         )
         plt.scatter(
-            predicted[0, 0], predicted[0, 1], color="orange", s=100, label="Prediction Start", zorder=5
+            predicted[0, 0],
+            predicted[0, 1],
+            color="orange",
+            s=100,
+            label="Prediction Start",
+            zorder=5,
         )
 
         if "two_body" in dataset_type:
@@ -74,7 +81,7 @@ def plot_predictions(
         )
         plt.xlabel("X Position (m)", fontsize=14)
         plt.ylabel("Y Position (m)", fontsize=14)
-        plt.legend(fontsize=12, loc='upper left', bbox_to_anchor=(1, 1))
+        plt.legend(fontsize=12, loc="upper left", bbox_to_anchor=(1, 1))
         plt.grid(True, linestyle="--", alpha=0.7)
         plt.axis("equal")
 
@@ -94,6 +101,7 @@ def plot_predictions(
         logger.error(f"Error in plot_predictions: {str(e)}")
         raise
 
+
 def plot_full_trajectory(
     full_trajectory,
     predicted,
@@ -103,7 +111,7 @@ def plot_full_trajectory(
     spaceship_id,
     output_folder,
     split,
-    prediction_start
+    prediction_start,
 ):
     try:
         plt.figure(figsize=(12, 10))
@@ -123,8 +131,8 @@ def plot_full_trajectory(
             linestyle="--",
         )
         plt.plot(
-            full_trajectory[prediction_start:prediction_start+steps, 0],
-            full_trajectory[prediction_start:prediction_start+steps, 1],
+            full_trajectory[prediction_start : prediction_start + steps, 0],
+            full_trajectory[prediction_start : prediction_start + steps, 1],
             color="limegreen",
             label="Target",
             linewidth=3,
@@ -212,7 +220,7 @@ def plot_velocities(
     spaceship_id,
     output_folder,
     split,
-    prediction_start
+    prediction_start,
 ):
     try:
         actual_velocity = np.linalg.norm(actual[:, 2:], axis=1)
@@ -235,7 +243,12 @@ def plot_velocities(
             linestyle="--",
         )
         plt.scatter(
-            predicted[0, 0], predicted[0, 1], color="orange", s=100, label="Prediction Start", zorder=5
+            predicted[0, 0],
+            predicted[0, 1],
+            color="orange",
+            s=100,
+            label="Prediction Start",
+            zorder=5,
         )
         plt.title(
             f"{model_type} on {dataset_type}\nVelocity - {steps} steps - Spaceship {spaceship_id}",
@@ -342,6 +355,7 @@ def plot_error_over_time(
         logger.error(f"Error in plot_error_over_time: {str(e)}")
         raise
 
+
 def plot_all(
     actual,
     predicted,
@@ -352,7 +366,7 @@ def plot_all(
     spaceship_id,
     output_folder,
     split,
-    prediction_start
+    prediction_start,
 ):
     try:
         plot_predictions(
@@ -364,7 +378,7 @@ def plot_all(
             spaceship_id,
             output_folder,
             split,
-            prediction_start
+            prediction_start,
         )
         plot_full_trajectory(
             full_trajectory,
@@ -375,7 +389,7 @@ def plot_all(
             spaceship_id,
             output_folder,
             split,
-            prediction_start
+            prediction_start,
         )
         plot_velocities(
             actual,
@@ -386,7 +400,7 @@ def plot_all(
             spaceship_id,
             output_folder,
             split,
-            prediction_start
+            prediction_start,
         )
         plot_full_velocities(
             full_trajectory,
@@ -397,7 +411,7 @@ def plot_all(
             spaceship_id,
             output_folder,
             split,
-            prediction_start
+            prediction_start,
         )
         plot_error_distribution(
             actual,
@@ -407,7 +421,7 @@ def plot_all(
             steps,
             spaceship_id,
             output_folder,
-            split
+            split,
         )
         plot_error_over_time(
             actual,
@@ -417,7 +431,7 @@ def plot_all(
             steps,
             spaceship_id,
             output_folder,
-            split
+            split,
         )
         logger.info(
             f"All plots generated for {model_type} on {dataset_type}, {steps} steps, spaceship {spaceship_id}"
@@ -425,6 +439,7 @@ def plot_all(
     except Exception as e:
         logger.error(f"Error in plot_all: {str(e)}")
         raise
+
 
 def plot_full_velocities(
     full_trajectory,
@@ -435,17 +450,32 @@ def plot_full_velocities(
     spaceship_id,
     output_folder,
     split,
-    prediction_start
+    prediction_start,
 ):
     try:
         full_velocity = np.linalg.norm(full_trajectory[:, 2:], axis=1)
         predicted_velocity = np.linalg.norm(predicted[:, 2:], axis=1)
 
         plt.figure(figsize=(12, 8))
-        plt.plot(range(len(full_velocity)), full_velocity, color="blue", label="Full Trajectory", linewidth=2)
-        plt.plot(range(prediction_start, prediction_start + len(predicted_velocity)), predicted_velocity, color="red", label="Predicted", linewidth=2, linestyle="--")
+        plt.plot(
+            range(len(full_velocity)),
+            full_velocity,
+            color="blue",
+            label="Full Trajectory",
+            linewidth=2,
+        )
+        plt.plot(
+            range(prediction_start, prediction_start + len(predicted_velocity)),
+            predicted_velocity,
+            color="red",
+            label="Predicted",
+            linewidth=2,
+            linestyle="--",
+        )
 
-        plt.axvline(x=prediction_start, color="green", linestyle=":", label="Prediction Start")
+        plt.axvline(
+            x=prediction_start, color="green", linestyle=":", label="Prediction Start"
+        )
 
         plt.title(
             f"{model_type} on {dataset_type}\nFull Velocity - {steps} steps prediction - Spaceship {spaceship_id}",
