@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    # This part is for parsing command line arguments and running the appropriate function
     parser = argparse.ArgumentParser(
         description="Train, run inference, or generate data for orbital prediction models"
     )
